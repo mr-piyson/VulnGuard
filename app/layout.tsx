@@ -19,10 +19,16 @@ export const metadata: Metadata = {
   generator: "v0.app",
 };
 
+import { TRPCProvider } from "@/lib/trpc/Provider";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <TRPCProvider>
+          {children}
+        </TRPCProvider>
+      </body>
     </html>
   );
 }

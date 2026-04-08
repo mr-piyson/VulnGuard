@@ -1,60 +1,55 @@
-"use client";
+"use client"
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Users, BookOpen } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Clock, Users, BookOpen } from "lucide-react"
+import Link from "next/link"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { trpc } from "@/lib/trpc/client"
 
 interface Course {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  difficulty: string;
-  duration: number;
-  modules: unknown[];
+  id: string
+  title: string
+  slug: string
+  description: string
+  difficulty: string
+  duration: number
+  modules: unknown[]
   _count: {
-    enrollments: number;
-  };
+    enrollments: number
+  }
 }
 
 interface CourseGridProps {
-  courses: Course[];
-  userId: string;
+  courses: Course[]
+  userId: string
 }
 
 export default function CourseGrid({ courses, userId }: CourseGridProps) {
-  const router = useRouter();
-  const [enrolling, setEnrolling] = useState<string | null>(null);
+  const router = useRouter()
+  const [enrolling, setEnrolling] = useState<string | null>(null)
+  const enroll = trpc.enrollments.create.useMutation()
 
   const handleEnroll = async (courseId: string) => {
-    setEnrolling(courseId);
+    setEnrolling(courseId)
 
     try {
-      const response = await fetch("/api/enrollments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseId }),
-      });
-
-      if (response.ok) {
-        router.refresh();
-      }
+      await enroll.mutateAsync({ courseId })
+      router.refresh()
     } catch (error) {
-      console.error("Failed to enroll:", error);
+      console.error("Failed to enroll:", error)
     } finally {
-      setEnrolling(null);
+      setEnrolling(null)
     }
-  };
+  }
 
   return (
     <div>
       <div className="mb-6">
         <h2 className="text-2xl font-bold mb-2">Available Courses</h2>
-        <p className="text-muted-foreground">Explore our comprehensive TeachNLearnurity curriculum</p>
+        <p className="text-muted-foreground">Explore our comprehensive VulnGuard curriculum</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -101,5 +96,5 @@ export default function CourseGrid({ courses, userId }: CourseGridProps) {
         ))}
       </div>
     </div>
-  );
+  )
 }

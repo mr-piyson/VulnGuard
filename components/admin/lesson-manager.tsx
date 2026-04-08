@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Trash } from "lucide-react"
+import { trpc } from "@/lib/trpc/client"
 
 interface Lesson {
   id: string
@@ -32,23 +33,20 @@ export default function LessonManager({ moduleId, lessons: initialLessons }: Les
     codeExample: "",
   })
 
+  const createLesson = trpc.admin.createLesson.useMutation()
+  const deleteLesson = trpc.admin.deleteLesson.useMutation()
+
   const handleCreateLesson = async () => {
     try {
-      const response = await fetch(`/api/admin/modules/${moduleId}/lessons`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...newLesson,
-          order: lessons.length,
-        }),
+      const lesson = await createLesson.mutateAsync({
+        moduleId,
+        ...newLesson,
+        order: lessons.length,
       })
 
-      if (response.ok) {
-        const lesson = await response.json()
-        setLessons([...lessons, lesson])
-        setNewLesson({ title: "", content: "", duration: 10, codeExample: "" })
-        setShowNewForm(false)
-      }
+      setLessons([...lessons, lesson as any])
+      setNewLesson({ title: "", content: "", duration: 10, codeExample: "" })
+      setShowNewForm(false)
     } catch (error) {
       console.error("Failed to create lesson:", error)
     }
@@ -58,13 +56,8 @@ export default function LessonManager({ moduleId, lessons: initialLessons }: Les
     if (!confirm("Are you sure you want to delete this lesson?")) return
 
     try {
-      const response = await fetch(`/api/admin/lessons/${lessonId}`, {
-        method: "DELETE",
-      })
-
-      if (response.ok) {
-        setLessons(lessons.filter((l) => l.id !== lessonId))
-      }
+      await deleteLesson.mutateAsync({ id: lessonId })
+      setLessons(lessons.filter((l) => l.id !== lessonId))
     } catch (error) {
       console.error("Failed to delete lesson:", error)
     }
@@ -126,7 +119,7 @@ export default function LessonManager({ moduleId, lessons: initialLessons }: Les
               <Button size="sm" onClick={handleCreateLesson}>
                 Create Lesson
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setShowNewForm(false)}>
+              <Button size="sm" variant="outline" onClick={() => setShowNewForm(false)} className="bg-transparent">
                 Cancel
               </Button>
             </div>
@@ -144,9 +137,11 @@ export default function LessonManager({ moduleId, lessons: initialLessons }: Les
                 <span className="text-sm text-muted-foreground">({lesson.duration} min)</span>
               </div>
             </div>
-            <Button size="sm" variant="ghost" onClick={() => handleDeleteLesson(lesson.id)}>
-              <Trash className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-2">
+              <Button size="sm" variant="ghost" onClick={() => handleDeleteLesson(lesson.id)}>
+                <Trash className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         ))}
       </div>

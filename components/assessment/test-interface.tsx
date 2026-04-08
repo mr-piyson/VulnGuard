@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress"
 import { Clock, Award, AlertCircle, CheckCircle, XCircle } from "lucide-react"
 import Link from "next/link"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { trpc } from "@/lib/trpc/client"
 
 interface Question {
   id: string
@@ -57,6 +58,7 @@ export default function TestInterface({ course, test, previousResults }: TestInt
   const [submitted, setSubmitted] = useState(false)
   const [result, setResult] = useState<{ score: number; passed: boolean; feedback: any[] } | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const submitTest = trpc.tests.submit.useMutation();
 
   const bestResult =
     previousResults.length > 0
@@ -83,21 +85,14 @@ export default function TestInterface({ course, test, previousResults }: TestInt
     setSubmitting(true)
 
     try {
-      const response = await fetch("/api/tests/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          testId: test.id,
-          answers,
-        }),
-      })
+      const data = await submitTest.mutateAsync({
+        testId: test.id,
+        answers,
+      });
 
-      if (response.ok) {
-        const data = await response.json()
-        setResult(data)
-        setSubmitted(true)
-        router.refresh()
-      }
+      setResult(data)
+      setSubmitted(true)
+      router.refresh()
     } catch (error) {
       console.error("Failed to submit test:", error)
     } finally {

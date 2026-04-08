@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, CheckCircle, Circle, Menu, Award } from "luc
 import Link from "next/link"
 import LessonContent from "./lesson-content"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { trpc } from "@/lib/trpc/client"
 
 interface Module {
   id: string
@@ -21,8 +22,9 @@ interface Lesson {
   content: string
   codeExample?: string | null
   duration: number
-  moduleTitle: string
+  moduleTitle?: string
   moduleId: string
+  videoUrl?: string | null
 }
 
 interface ProgressItem {
@@ -56,6 +58,8 @@ export default function LearningInterface({
   const [isCompleted, setIsCompleted] = useState(initialCompleted)
   const [marking, setMarking] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  
+  const updateProgress = trpc.progress.update.useMutation();
 
   const currentIndex = allLessons.findIndex((l) => l.id === currentLesson.id)
   const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null
@@ -69,19 +73,13 @@ export default function LearningInterface({
     setMarking(true)
 
     try {
-      const response = await fetch("/api/progress", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          lessonId: currentLesson.id,
-          completed: !isCompleted,
-        }),
-      })
+      await updateProgress.mutateAsync({
+        lessonId: currentLesson.id,
+        completed: !isCompleted,
+      });
 
-      if (response.ok) {
-        setIsCompleted(!isCompleted)
-        router.refresh()
-      }
+      setIsCompleted(!isCompleted)
+      router.refresh()
     } catch (error) {
       console.error("Failed to update progress:", error)
     } finally {

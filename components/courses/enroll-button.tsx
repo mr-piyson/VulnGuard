@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { trpc } from "@/lib/trpc/client"
 
 interface EnrollButtonProps {
   courseId: string
@@ -11,20 +12,14 @@ interface EnrollButtonProps {
 export default function EnrollButton({ courseId }: EnrollButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const enroll = trpc.enrollments.create.useMutation()
 
   const handleEnroll = async () => {
     setLoading(true)
 
     try {
-      const response = await fetch("/api/enrollments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseId }),
-      })
-
-      if (response.ok) {
-        router.refresh()
-      }
+      await enroll.mutateAsync({ courseId });
+      router.refresh()
     } catch (error) {
       console.error("Failed to enroll:", error)
     } finally {

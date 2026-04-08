@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Trash, ChevronDown, ChevronUp, Save } from "lucide-react"
+import { Plus, Trash } from "lucide-react"
+import { trpc } from "@/lib/trpc/client"
 
 interface Question {
   id: string
@@ -35,7 +36,6 @@ interface TestManagerProps {
 export default function TestManager({ courseId, test: initialTest }: TestManagerProps) {
   const [test, setTest] = useState<Test | null>(initialTest)
   const [loading, setLoading] = useState(false)
-  const [editingQuestion, setEditingQuestion] = useState<string | null>(null)
   const [newQuestion, setNewQuestion] = useState({
     question: "",
     options: ["", "", "", ""],
@@ -44,24 +44,22 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
   })
   const [showNewForm, setShowNewForm] = useState(false)
 
+  const createTest = trpc.admin.createTest.useMutation()
+  const updateSettings = trpc.admin.updateTestSettings.useMutation()
+  const addQuestion = trpc.admin.addQuestion.useMutation()
+  const deleteQuestion = trpc.admin.deleteQuestion.useMutation()
+
   const handleCreateTest = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/admin/courses/${courseId}/test`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: "Final Assessment",
-          description: "Test your knowledge to earn a certificate",
-          passingScore: 70,
-          timeLimit: 30,
-        }),
+      const data = await createTest.mutateAsync({
+        courseId,
+        title: "Final Assessment",
+        description: "Test your knowledge to earn a certificate",
+        passingScore: 70,
+        timeLimit: 30,
       })
-
-      if (response.ok) {
-        const data = await response.json()
-        setTest(data)
-      }
+      setTest(data as any)
     } catch (error) {
       console.error("Failed to create test:", error)
     } finally {
@@ -73,31 +71,25 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
     if (!test) return
     setLoading(true)
     try {
-      const response = await fetch(`/api/admin/tests/${test.id}/questions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...newQuestion,
-          options: JSON.stringify(newQuestion.options.filter(o => o.trim() !== "")),
-          order: test.questions.length,
-          type: "multiple-choice"
-        }),
+      const question = await addQuestion.mutateAsync({
+        testId: test.id,
+        ...newQuestion,
+        options: JSON.stringify(newQuestion.options.filter((o) => o.trim() !== "")),
+        order: test.questions.length,
+        type: "multiple-choice",
       })
 
-      if (response.ok) {
-        const question = await response.json()
-        setTest({
-          ...test,
-          questions: [...test.questions, question]
-        })
-        setNewQuestion({
-          question: "",
-          options: ["", "", "", ""],
-          correctAnswer: "",
-          explanation: "",
-        })
-        setShowNewForm(false)
-      }
+      setTest({
+        ...test,
+        questions: [...test.questions, question as any],
+      })
+      setNewQuestion({
+        question: "",
+        options: ["", "", "", ""],
+        correctAnswer: "",
+        explanation: "",
+      })
+      setShowNewForm(false)
     } catch (error) {
       console.error("Failed to add question:", error)
     } finally {
@@ -108,18 +100,25 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
   const handleDeleteQuestion = async (questionId: string) => {
     if (!test || !confirm("Are you sure?")) return
     try {
-      const response = await fetch(`/api/admin/questions/${questionId}`, {
-        method: "DELETE",
+      await deleteQuestion.mutateAsync({ id: questionId })
+      setTest({
+        ...test,
+        questions: test.questions.filter((q) => q.id !== questionId),
       })
-
-      if (response.ok) {
-        setTest({
-          ...test,
-          questions: test.questions.filter(q => q.id !== questionId)
-        })
-      }
     } catch (error) {
       console.error("Failed to delete question:", error)
+    }
+  }
+
+  const updateTestSettings = async (updates: { passingScore?: number; timeLimit?: number | null }) => {
+    if (!test) return
+    try {
+      await updateSettings.mutateAsync({
+        courseId,
+        ...updates,
+      })
+    } catch (error) {
+      console.error("Failed to update test settings:", error)
     }
   }
 
@@ -149,35 +148,26 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>Passing Score (%)</Label>
-            <Input 
-              type="number" 
-              value={test.passingScore} 
-              onChange={async (e) => {
-                const val = parseInt(e.target.value)
+            <Input
+              type="number"
+              value={test.passingScore}
+              onChange={(e) => {
+                const val = Number.parseInt(e.target.value)
                 setTest({ ...test, passingScore: val })
-                // Debounced update would be better, but let's just use a save button or direct update
-                await fetch(`/api/admin/courses/${courseId}/test`, {
-                   method: "PATCH",
-                   headers: { "Content-Type": "application/json" },
-                   body: JSON.stringify({ passingScore: val })
-                })
-              }} 
+                updateTestSettings({ passingScore: val })
+              }}
             />
           </div>
           <div className="space-y-2">
             <Label>Time Limit (minutes)</Label>
-            <Input 
-              type="number" 
-              value={test.timeLimit || ""} 
-              onChange={async (e) => {
-                const val = e.target.value ? parseInt(e.target.value) : null
+            <Input
+              type="number"
+              value={test.timeLimit || ""}
+              onChange={(e) => {
+                const val = e.target.value ? Number.parseInt(e.target.value) : null
                 setTest({ ...test, timeLimit: val })
-                await fetch(`/api/admin/courses/${courseId}/test`, {
-                   method: "PATCH",
-                   headers: { "Content-Type": "application/json" },
-                   body: JSON.stringify({ timeLimit: val })
-                })
-              }} 
+                updateTestSettings({ timeLimit: val })
+              }}
             />
           </div>
         </CardContent>
@@ -199,30 +189,31 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Question Text</Label>
-              <Textarea 
+              <Textarea
                 value={newQuestion.question}
-                onChange={(e) => setNewQuestion({...newQuestion, question: e.target.value})}
+                onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
                 placeholder="Enter the question..."
               />
             </div>
-            
+
             <div className="space-y-3">
               <Label>Options</Label>
               {newQuestion.options.map((opt, i) => (
                 <div key={i} className="flex gap-2">
-                  <Input 
+                  <Input
                     value={opt}
                     onChange={(e) => {
                       const newOpts = [...newQuestion.options]
                       newOpts[i] = e.target.value
-                      setNewQuestion({...newQuestion, options: newOpts})
+                      setNewQuestion({ ...newQuestion, options: newOpts })
                     }}
-                    placeholder={`Option ${i+1}`}
+                    placeholder={`Option ${i + 1}`}
                   />
-                  <Button 
+                  <Button
                     variant={newQuestion.correctAnswer === opt && opt !== "" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setNewQuestion({...newQuestion, correctAnswer: opt})}
+                    onClick={() => setNewQuestion({ ...newQuestion, correctAnswer: opt })}
+                    className={newQuestion.correctAnswer === opt && opt !== "" ? "" : "bg-transparent"}
                   >
                     Correct
                   </Button>
@@ -232,9 +223,9 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
 
             <div className="space-y-2">
               <Label>Explanation (Optional)</Label>
-              <Textarea 
+              <Textarea
                 value={newQuestion.explanation}
-                onChange={(e) => setNewQuestion({...newQuestion, explanation: e.target.value})}
+                onChange={(e) => setNewQuestion({ ...newQuestion, explanation: e.target.value })}
                 placeholder="Explain why the answer is correct..."
                 rows={2}
               />
@@ -244,7 +235,9 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
               <Button onClick={handleAddQuestion} disabled={loading || !newQuestion.question || !newQuestion.correctAnswer}>
                 Save Question
               </Button>
-              <Button variant="outline" onClick={() => setShowNewForm(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setShowNewForm(false)} className="bg-transparent">
+                Cancel
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -252,41 +245,55 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
 
       <div className="space-y-4">
         {test.questions.map((q, idx) => {
-           const options = JSON.parse(q.options)
-           return (
-             <Card key={q.id}>
-               <CardHeader className="py-4">
-                 <div className="flex items-start justify-between">
-                   <div className="flex-1">
-                     <div className="flex items-center gap-2 mb-1">
-                       <span className="text-sm font-medium text-muted-foreground">Q{idx + 1}</span>
-                       <span className="text-sm px-2 py-0.5 bg-muted rounded uppercase text-xs font-bold tracking-wider">{q.type}</span>
-                     </div>
-                     <CardTitle className="text-lg">{q.question}</CardTitle>
-                   </div>
-                   <Button size="sm" variant="ghost" onClick={() => handleDeleteQuestion(q.id)} className="text-destructive">
-                     <Trash className="h-4 w-4" />
-                   </Button>
-                 </div>
-               </CardHeader>
-               <CardContent className="pb-4">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                   {options.map((opt: string, i: number) => (
-                     <div key={i} className={`p-2 rounded border text-sm ${opt === q.correctAnswer ? "bg-primary/10 border-primary/50 font-medium" : "bg-muted/30 border-transparent"}`}>
-                       {opt}
-                       {opt === q.correctAnswer && <span className="ml-2 text-[10px] text-primary font-bold">(CORRECT)</span>}
-                     </div>
-                   ))}
-                 </div>
-                 {q.explanation && (
-                   <div className="mt-4 p-3 bg-muted/20 rounded text-xs text-muted-foreground border-l-2 border-primary/30">
-                     <span className="font-bold mr-1">Explanation:</span>
-                     {q.explanation}
-                   </div>
-                 )}
-               </CardContent>
-             </Card>
-           )
+          const options = JSON.parse(q.options)
+          return (
+            <Card key={q.id}>
+              <CardHeader className="py-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm text-muted-foreground">Q{idx + 1}</span>
+                      <span className="text-sm px-2 py-0.5 bg-muted rounded uppercase text-xs font-bold tracking-wider">
+                        {q.type}
+                      </span>
+                    </div>
+                    <CardTitle className="text-lg">{q.question}</CardTitle>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleDeleteQuestion(q.id)}
+                    className="text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="pb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {options.map((opt: string, i: number) => (
+                    <div
+                      key={i}
+                      className={`p-2 rounded border text-sm ${
+                        opt === q.correctAnswer
+                          ? "bg-primary/10 border-primary/50 font-medium"
+                          : "bg-muted/30 border-transparent"
+                      }`}
+                    >
+                      {opt}
+                      {opt === q.correctAnswer && <span className="ml-2 text-[10px] text-primary font-bold">(CORRECT)</span>}
+                    </div>
+                  ))}
+                </div>
+                {q.explanation && (
+                  <div className="mt-4 p-3 bg-muted/20 rounded text-xs text-muted-foreground border-l-2 border-primary/30">
+                    <span className="font-bold mr-1">Explanation:</span>
+                    {q.explanation}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )
         })}
       </div>
     </div>

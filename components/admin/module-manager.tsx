@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Trash, ChevronDown, ChevronUp } from "lucide-react"
 import LessonManager from "./lesson-manager"
+import { trpc } from "@/lib/trpc/client"
 
 interface Module {
   id: string
@@ -33,27 +34,23 @@ interface ModuleManagerProps {
 export default function ModuleManager({ courseId, modules: initialModules }: ModuleManagerProps) {
   const [modules, setModules] = useState(initialModules)
   const [expandedModule, setExpandedModule] = useState<string | null>(null)
-  const [editingModule, setEditingModule] = useState<string | null>(null)
   const [newModule, setNewModule] = useState({ title: "", description: "" })
   const [showNewForm, setShowNewForm] = useState(false)
 
+  const createModule = trpc.admin.createModule.useMutation()
+  const deleteModule = trpc.admin.deleteModule.useMutation()
+
   const handleCreateModule = async () => {
     try {
-      const response = await fetch(`/api/admin/courses/${courseId}/modules`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...newModule,
-          order: modules.length,
-        }),
+      const module = await createModule.mutateAsync({
+        courseId,
+        ...newModule,
+        order: modules.length,
       })
 
-      if (response.ok) {
-        const module = await response.json()
-        setModules([...modules, module])
-        setNewModule({ title: "", description: "" })
-        setShowNewForm(false)
-      }
+      setModules([...modules, module as any])
+      setNewModule({ title: "", description: "" })
+      setShowNewForm(false)
     } catch (error) {
       console.error("Failed to create module:", error)
     }
@@ -63,13 +60,8 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
     if (!confirm("Are you sure you want to delete this module?")) return
 
     try {
-      const response = await fetch(`/api/admin/modules/${moduleId}`, {
-        method: "DELETE",
-      })
-
-      if (response.ok) {
-        setModules(modules.filter((m) => m.id !== moduleId))
-      }
+      await deleteModule.mutateAsync({ id: moduleId })
+      setModules(modules.filter((m) => m.id !== moduleId))
     } catch (error) {
       console.error("Failed to delete module:", error)
     }
@@ -110,7 +102,7 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
             </div>
             <div className="flex gap-2">
               <Button onClick={handleCreateModule}>Create Module</Button>
-              <Button variant="outline" onClick={() => setShowNewForm(false)}>
+              <Button variant="outline" onClick={() => setShowNewForm(false)} className="bg-transparent">
                 Cancel
               </Button>
             </div>
@@ -136,11 +128,7 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
                     variant="ghost"
                     onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)}
                   >
-                    {expandedModule === module.id ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
+                    {expandedModule === module.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => handleDeleteModule(module.id)}>
                     <Trash className="h-4 w-4" />
