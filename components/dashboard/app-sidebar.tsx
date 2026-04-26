@@ -7,6 +7,7 @@ import {
   Search,
   Users,
   ShieldCheck,
+  Settings,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -30,12 +31,60 @@ interface AppSidebarProps {
     email: string
     role: string | null
   }
+  activeTab?: string
+  setActiveTab?: (tab: string) => void
 }
 
-export function AppSidebar({ user }: AppSidebarProps) {
+export function AppSidebar({ user, activeTab, setActiveTab }: AppSidebarProps) {
   const pathname = usePathname()
   const isAdmin = user.role === "admin"
   const isTeacher = user.role === "teacher" || isAdmin
+
+  const NavItem = ({ 
+    id, 
+    href, 
+    icon: Icon, 
+    label, 
+    tooltip 
+  }: { 
+    id: string, 
+    href: string, 
+    icon: any, 
+    label: string, 
+    tooltip: string 
+  }) => {
+    const isActive = activeTab ? activeTab === id : pathname === href
+
+    if (activeTab && setActiveTab) {
+      return (
+        <SidebarMenuItem>
+          <SidebarMenuButton 
+            onClick={() => setActiveTab(id)}
+            isActive={isActive} 
+            tooltip={tooltip}
+          >
+            <Icon className="size-4" />
+            <span>{label}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      )
+    }
+
+    return (
+      <SidebarMenuItem>
+        <SidebarMenuButton 
+          asChild
+          isActive={isActive} 
+          tooltip={tooltip}
+        >
+          <Link href={href}>
+            <Icon className="size-4" />
+            <span>{label}</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    )
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -55,30 +104,20 @@ export function AppSidebar({ user }: AppSidebarProps) {
           <SidebarGroupLabel>Learning</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild
-                  isActive={pathname === "/dashboard"} 
-                  tooltip="My Courses"
-                >
-                  <Link href="/dashboard">
-                    <LayoutDashboard className="size-4" />
-                    <span>My Courses</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild
-                  isActive={pathname === "/dashboard/browse"} 
-                  tooltip="Browse Courses"
-                >
-                  <Link href="/dashboard/browse">
-                    <Search className="size-4" />
-                    <span>Browse Courses</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <NavItem 
+                id="my-courses" 
+                href="/dashboard" 
+                icon={LayoutDashboard} 
+                label="My Courses" 
+                tooltip="My Courses" 
+              />
+              <NavItem 
+                id="browse" 
+                href="/dashboard/browse" 
+                icon={Search} 
+                label="Browse Courses" 
+                tooltip="Browse Courses" 
+              />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -88,18 +127,13 @@ export function AppSidebar({ user }: AppSidebarProps) {
             <SidebarGroupLabel>Management</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    asChild
-                    isActive={pathname === "/dashboard/students"} 
-                    tooltip="Manage Students"
-                  >
-                    <Link href="/dashboard/students">
-                      <Users className="size-4" />
-                      <span>Manage Students</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <NavItem 
+                  id="students" 
+                  href="/dashboard/students" 
+                  icon={Users} 
+                  label="Manage Students" 
+                  tooltip="Manage Students" 
+                />
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -110,48 +144,48 @@ export function AppSidebar({ user }: AppSidebarProps) {
             <SidebarGroupLabel>Administration</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    asChild
-                    isActive={pathname === "/admin"} 
-                    tooltip="Admin Dashboard"
-                  >
-                    <Link href="/admin">
-                      <ShieldCheck className="size-4 text-destructive" />
-                      <span className="font-semibold text-destructive">Admin Panel</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    asChild
-                    isActive={pathname === "/admin/courses"} 
-                    tooltip="Course Content"
-                  >
-                    <Link href="/admin/courses">
-                      <BookOpen className="size-4" />
-                      <span>Course Management</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    asChild
-                    isActive={pathname === "/admin/users"} 
-                    tooltip="User Directory"
-                  >
-                    <Link href="/admin/users">
-                      <Users className="size-4" />
-                      <span>User Management</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <NavItem 
+                  id="admin-overview" 
+                  href="/admin" 
+                  icon={ShieldCheck} 
+                  label="Admin Panel" 
+                  tooltip="Admin Dashboard" 
+                />
+                <NavItem 
+                  id="admin-courses" 
+                  href="/admin/courses" 
+                  icon={BookOpen} 
+                  label="Course Management" 
+                  tooltip="Course Content" 
+                />
+                <NavItem 
+                  id="admin-users" 
+                  href="/admin/users" 
+                  icon={Users} 
+                  label="User Management" 
+                  tooltip="User Directory" 
+                />
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+        <SidebarGroup>
+          <SidebarGroupLabel>Settings</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <NavItem 
+                id="settings" 
+                href="/dashboard/settings" 
+                icon={Settings} 
+                label="Settings" 
+                tooltip="Settings" 
+              />
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
   )
 }
+

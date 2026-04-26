@@ -1,72 +1,55 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { AppSidebar } from "./app-sidebar"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { signOut } from "@/lib/auth-client"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Award, LogOut, Settings, Bell, Shield } from "lucide-react"
-import CourseGrid from "./course-grid"
-import EnrolledCourses from "./enrolled-courses"
-import UserManagement from "@/components/users/user-management"
-import AdminOverview from "@/components/admin/admin-overview"
-import AdminCourseList from "@/components/admin/admin-course-list"
-import { Separator } from "@/components/ui/separator"
+import { useState } from "react";
+import { AppSidebar } from "./app-sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { signOut } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Award, LogOut, Settings, Bell, Shield } from "lucide-react";
+import CourseGrid from "./course-grid";
+import EnrolledCourses from "./enrolled-courses";
+import UserManagement from "@/components/users/user-management";
+import AdminOverview from "@/components/admin/admin-overview";
+import AdminCourseList from "@/components/admin/admin-course-list";
+import { Separator } from "@/components/ui/separator";
 
 interface DashboardContentProps {
-  user: any
-  allCourses: any[]
-  enrolledCourses: any[]
-  userRole: string | null
-  adminCourses: any[]
-  adminStats: any
+  user: any;
+  allCourses: any[];
+  enrolledCourses: any[];
+  userRole: string | null;
+  adminCourses: any[];
+  adminStats: any;
 }
 
-export default function DashboardContent({
-  user,
-  allCourses,
-  enrolledCourses,
-  userRole,
-  adminCourses,
-  adminStats,
-}: DashboardContentProps) {
-  const router = useRouter()
-  const [activeTab, setActiveTab] = useState("my-courses")
-  const canManageStudents = userRole === "teacher" || userRole === "admin"
+export default function DashboardContent({ user, allCourses, enrolledCourses, userRole, adminCourses, adminStats }: DashboardContentProps) {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState("my-courses");
+  const canManageStudents = userRole === "teacher" || userRole === "admin";
 
   const handleSignOut = async () => {
-    await signOut()
-    router.push("/")
-    router.refresh()
-  }
+    await signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   const initials =
     user.name
       ?.split(" ")
       .map((n: string) => n[0])
       .join("")
-      .toUpperCase() || user.email[0].toUpperCase()
+      .toUpperCase() || user.email[0].toUpperCase();
 
   const renderContent = () => {
     switch (activeTab) {
       case "my-courses":
-        return <EnrolledCourses enrollments={enrolledCourses} userId={user.id} />
+        return <EnrolledCourses enrollments={enrolledCourses} userId={user.id} />;
       case "browse":
-        return <CourseGrid courses={allCourses} userId={user.id} />
+        return <CourseGrid courses={allCourses} userId={user.id} />;
       case "students":
         return canManageStudents ? (
           <div className="bg-card border rounded-xl p-6 shadow-sm">
@@ -76,34 +59,36 @@ export default function DashboardContent({
             </div>
             <UserManagement currentRole={userRole || "student"} />
           </div>
-        ) : null
+        ) : null;
       case "admin-overview":
-        return userRole === "admin" ? <AdminOverview stats={adminStats} /> : null
+        return userRole === "admin" ? <AdminOverview stats={adminStats} /> : null;
       case "admin-courses":
-        return userRole === "admin" ? <AdminCourseList courses={adminCourses} /> : null
+        return userRole === "admin" ? <AdminCourseList courses={adminCourses} /> : null;
       default:
-        return <EnrolledCourses enrollments={enrolledCourses} userId={user.id} />
+        return <EnrolledCourses enrollments={enrolledCourses} userId={user.id} />;
     }
-  }
+  };
 
   const getTabTitle = () => {
     switch (activeTab) {
-      case "my-courses": return "My Learning Path"
-      case "browse": return "Explore Courses"
-      case "students": return "User Management"
-      case "admin-overview": return "Admin Dashboard"
-      case "admin-courses": return "Course Management"
-      default: return "Dashboard"
+      case "my-courses":
+        return "My Learning Path";
+      case "browse":
+        return "Explore Courses";
+      case "students":
+        return "User Management";
+      case "admin-overview":
+        return "Admin Dashboard";
+      case "admin-courses":
+        return "Course Management";
+      default:
+        return "Dashboard";
     }
-  }
+  };
 
   return (
     <SidebarProvider>
-      <AppSidebar 
-        user={{ ...user, role: userRole }} 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-      />
+      <AppSidebar user={{ ...user, role: userRole }} activeTab={activeTab} setActiveTab={setActiveTab} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-6 transition-[width,height] ease-linear">
           <SidebarTrigger className="-ml-1" />
@@ -153,11 +138,9 @@ export default function DashboardContent({
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-6">
-          <div className="container mx-auto max-w-7xl">
-            {renderContent()}
-          </div>
+          <div className="container mx-auto max-w-7xl">{renderContent()}</div>
         </main>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
