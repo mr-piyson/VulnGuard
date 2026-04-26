@@ -63,8 +63,7 @@ export const usersRouter = router({
           password: input.password,
           name: input.name,
         },
-        // Remove headers() to prevent better-auth from setting session cookies 
-        // and redirecting/logging out the current admin user.
+        headers: new Headers(), // Prevents session cookie from being set in the response
       });
 
       if (!result) {
