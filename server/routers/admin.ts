@@ -1,6 +1,6 @@
-import { z } from 'zod';
-import { router, adminProcedure } from '../trpc';
-import { prisma } from '@/lib/db';
+import { z } from "zod";
+import { router, adminProcedure } from "../trpc";
+import { prisma } from "@/lib/db";
 
 export const adminRouter = router({
   createCourse: adminProcedure
@@ -12,7 +12,7 @@ export const adminRouter = router({
         difficulty: z.string(),
         duration: z.number(),
         isPublished: z.boolean(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const course = await prisma.course.create({
@@ -31,7 +31,7 @@ export const adminRouter = router({
         difficulty: z.string().optional(),
         duration: z.number().optional(),
         isPublished: z.boolean().optional(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const { id, ...data } = input;
@@ -42,14 +42,12 @@ export const adminRouter = router({
       return course;
     }),
 
-  deleteCourse: adminProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      await prisma.course.delete({
-        where: { id: input.id },
-      });
-      return { success: true };
-    }),
+  deleteCourse: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
+    await prisma.course.delete({
+      where: { id: input.id },
+    });
+    return { success: true };
+  }),
 
   // Add more admin procedures as needed for modules, lessons, etc.
   createModule: adminProcedure
@@ -59,7 +57,7 @@ export const adminRouter = router({
         title: z.string(),
         description: z.string(),
         order: z.number(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       return await prisma.module.create({
@@ -77,7 +75,7 @@ export const adminRouter = router({
         order: z.number(),
         videoUrl: z.string().optional(),
         codeExample: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       return await prisma.lesson.create({
@@ -85,14 +83,12 @@ export const adminRouter = router({
       });
     }),
 
-  deleteModule: adminProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      await prisma.module.delete({
-        where: { id: input.id },
-      });
-      return { success: true };
-    }),
+  deleteModule: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
+    await prisma.module.delete({
+      where: { id: input.id },
+    });
+    return { success: true };
+  }),
 
   updateModule: adminProcedure
     .input(
@@ -101,7 +97,7 @@ export const adminRouter = router({
         title: z.string().optional(),
         description: z.string().optional(),
         order: z.number().optional(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const { id, ...data } = input;
@@ -111,14 +107,12 @@ export const adminRouter = router({
       });
     }),
 
-  deleteLesson: adminProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      await prisma.lesson.delete({
-        where: { id: input.id },
-      });
-      return { success: true };
-    }),
+  deleteLesson: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
+    await prisma.lesson.delete({
+      where: { id: input.id },
+    });
+    return { success: true };
+  }),
 
   updateLesson: adminProcedure
     .input(
@@ -129,7 +123,7 @@ export const adminRouter = router({
         duration: z.number().optional(),
         order: z.number().optional(),
         videoUrl: z.string().optional().nullable(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const { id, ...data } = input;
@@ -147,7 +141,7 @@ export const adminRouter = router({
         description: z.string(),
         passingScore: z.number(),
         timeLimit: z.number().nullable(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       return await prisma.test.create({
@@ -162,7 +156,7 @@ export const adminRouter = router({
         courseId: z.string(),
         passingScore: z.number().optional(),
         timeLimit: z.number().nullable().optional(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const { courseId, ...data } = input;
@@ -182,7 +176,7 @@ export const adminRouter = router({
         correctAnswer: z.string(),
         explanation: z.string().optional(),
         order: z.number(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       return await prisma.question.create({
@@ -190,12 +184,10 @@ export const adminRouter = router({
       });
     }),
 
-  deleteQuestion: adminProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      await prisma.question.delete({
-        where: { id: input.id },
-      });
-      return { success: true };
-    }),
+  deleteQuestion: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
+    await prisma.question.delete({
+      where: { id: input.id },
+    });
+    return { success: true };
+  }),
 });
