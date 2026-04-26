@@ -53,6 +53,7 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
   // Form states
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState("student");
   const [teacherId, setTeacherId] = useState<string | null>("none");
 
@@ -102,6 +103,7 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
   const resetForm = () => {
     setName("");
     setEmail("");
+    setPassword("");
     setRole("student");
     setTeacherId("none");
     setSelectedUser(null);
@@ -121,6 +123,7 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
     createUserMutation.mutate({
       name,
       email,
+      password,
       role,
       teacherId: teacherId === "none" ? null : teacherId,
     });
@@ -133,6 +136,7 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
       id: selectedUser.id,
       name,
       email,
+      password: password || undefined,
       role,
       teacherId: teacherId === "none" ? null : teacherId,
     });
@@ -181,6 +185,18 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={8}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -254,6 +270,17 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-password">New Password (Leave blank to keep current)</Label>
+                <Input
+                  id="edit-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={8}
                 />
               </div>
               {isAdmin && (
