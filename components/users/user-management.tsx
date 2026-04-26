@@ -148,13 +148,13 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
 
   return (
     <div className="space-y-4">
-      {isAdmin && (
+      {(isAdmin || currentRole === "teacher") && (
         <div className="flex justify-end">
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <UserPlus className="h-4 w-4" />
-                Add User
+                Add {currentRole === "teacher" ? "Student" : "User"}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
@@ -199,20 +199,28 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
                       minLength={8}
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="role">Role</Label>
-                    <Select value={role} onValueChange={setRole}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="student">Student</SelectItem>
-                        <SelectItem value="teacher">Teacher</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {role === "student" && (
+                  {isAdmin ? (
+                    <div className="grid gap-2">
+                      <Label htmlFor="role">Role</Label>
+                      <Select value={role} onValueChange={setRole}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="student">Student</SelectItem>
+                          <SelectItem value="teacher">Teacher</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div className="bg-muted/50 p-3 rounded-lg border flex items-center justify-between">
+                      <span className="text-sm font-medium">Account Role</span>
+                      <Badge variant="outline" className="bg-background uppercase text-[10px] font-bold tracking-wider">Student</Badge>
+                    </div>
+                  )}
+
+                  {isAdmin && role === "student" && (
                     <div className="grid gap-2">
                       <Label htmlFor="teacher">Assign Teacher (Optional)</Label>
                       <Select value={teacherId || "none"} onValueChange={setTeacherId}>

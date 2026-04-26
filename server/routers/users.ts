@@ -43,7 +43,7 @@ export const usersRouter = router({
     });
   }),
 
-  createUser: adminProcedure
+  createUser: teacherProcedure
     .input(
       z.object({
         name: z.string(),
@@ -53,10 +53,15 @@ export const usersRouter = router({
         teacherId: z.string().nullable().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const { session, userRole } = ctx;
+
+      // Teachers can ONLY create students
+      if (userRole === 'teacher' && input.role !== 'student') {
+        throw new Error('Teachers can only create student accounts');
+      }
+
       // Use better-auth to create the user and account
-      // Note: signUp.email on the client usually signs in, 
-      // but on the server via auth.api it might be different or we need to handle it carefully.
       const result = await auth.api.signUpEmail({
         body: {
           email: input.email,
@@ -70,12 +75,15 @@ export const usersRouter = router({
         throw new Error('Failed to create user account');
       }
 
+      // For teachers, automatically assign the student to them
+      const teacherId = userRole === 'teacher' ? session.user.id : input.teacherId;
+
       // better-auth creates the user, but we need to update their role and teacherId
       return await prisma.user.update({
         where: { email: input.email },
         data: {
           role: input.role,
-          teacherId: input.teacherId,
+          teacherId: teacherId,
         },
       });
     }),
