@@ -21,11 +21,11 @@ export default function EnrollButton({ courseId }: EnrollButtonProps) {
     try {
       await enroll.mutateAsync({ courseId });
       router.refresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to enroll:", error);
+      toast.error(error.message || "Failed to enroll");
     } finally {
       setLoading(false);
-      toast.error("Failed to Enroll");
     }
   };
 

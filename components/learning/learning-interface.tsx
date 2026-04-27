@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -51,14 +51,21 @@ export default function LearningInterface({
   modules,
   currentLesson,
   allLessons,
-  progressMap,
+  progressMap: initialProgressMap,
   isCompleted: initialCompleted,
 }: LearningInterfaceProps) {
   const router = useRouter()
+  const utils = trpc.useUtils();
   const [isCompleted, setIsCompleted] = useState(initialCompleted)
+  const [progressMap, setProgressMap] = useState(initialProgressMap)
   const [marking, setMarking] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   
+  useEffect(() => {
+    setProgressMap(initialProgressMap)
+    setIsCompleted(initialCompleted)
+  }, [initialProgressMap, initialCompleted])
+
   const updateProgress = trpc.progress.update.useMutation();
 
   const currentIndex = allLessons.findIndex((l) => l.id === currentLesson.id)
@@ -70,15 +77,26 @@ export default function LearningInterface({
   const allLessonsCompleted = completedCount === allLessons.length
 
   const handleMarkComplete = async () => {
+    const newStatus = !isCompleted;
     setMarking(true)
 
     try {
       await updateProgress.mutateAsync({
         lessonId: currentLesson.id,
-        completed: !isCompleted,
+        completed: newStatus,
       });
 
-      setIsCompleted(!isCompleted)
+      // Update local state for immediate feedback
+      setIsCompleted(newStatus)
+      const newMap = new Map(progressMap)
+      newMap.set(currentLesson.id, { lessonId: currentLesson.id, completed: newStatus })
+      setProgressMap(newMap)
+
+      // Invalidate queries to sync with server
+      utils.courses.getCourseFullProgress.invalidate({ courseId: course.id });
+      utils.courses.getEnrolled.invalidate();
+      utils.courses.getEnrollmentStatus.invalidate({ courseId: course.id });
+      
       router.refresh()
     } catch (error) {
       console.error("Failed to update progress:", error)

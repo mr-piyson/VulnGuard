@@ -52,7 +52,7 @@ export default function EnrolledCourses({ enrollments }: EnrolledCoursesProps) {
         <p className="text-muted-foreground">Continue where you left off</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-3">
         {enrollments.map((enrollment) => (
           <Card key={enrollment.id}>
             <CardHeader>

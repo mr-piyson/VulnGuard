@@ -43,7 +43,7 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
         order: modules.length,
       })
 
-      setModules([...modules, module as any])
+      setModules([...modules, { ...(module as any), lessons: [] }])
       setNewModule({ title: "", description: "" })
       setShowNewForm(false)
     } catch (error) {

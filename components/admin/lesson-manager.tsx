@@ -22,8 +22,8 @@ interface LessonManagerProps {
   lessons: Lesson[]
 }
 
-export default function LessonManager({ moduleId, lessons: initialLessons }: LessonManagerProps) {
-  const [lessons, setLessons] = useState(initialLessons)
+export default function LessonManager({ moduleId, lessons: initialLessons = [] }: LessonManagerProps) {
+  const [lessons, setLessons] = useState(initialLessons || [])
   const [showNewForm, setShowNewForm] = useState(false)
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
   

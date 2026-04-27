@@ -65,9 +65,9 @@ export const progressRouter = router({
           },
         });
 
-        const progressPercentage = Math.round(
-          (completedLessons / allLessons.length) * 100
-        );
+        const progressPercentage = allLessons.length > 0
+          ? Math.round((completedLessons / allLessons.length) * 100)
+          : 0;
 
         await prisma.enrollment.update({
           where: {
