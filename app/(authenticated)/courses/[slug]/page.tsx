@@ -1,48 +1,48 @@
-import { prisma } from "@/lib/db"
-import { notFound } from "next/navigation"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Clock, BookOpen, Award, CheckCircle } from "lucide-react"
-import Link from "next/link"
-import EnrollButton from "@/components/courses/enroll-button"
+"use client";
 
-export default async function CourseDetailPage({ params }: { params: { slug: string } }) {
-  const session = await auth.api.getSession({ headers: await headers() })
+import { use } from "react";
+import { trpc } from "@/lib/trpc/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, BookOpen, Award, CheckCircle, Loader2 } from "lucide-react";
+import Link from "next/link";
+import EnrollButton from "@/components/courses/enroll-button";
+import { useSession } from "@/lib/auth-client";
 
-  const course = await prisma.course.findUnique({
-    where: { slug: (await params).slug },
-    include: {
-      modules: {
-        include: {
-          lessons: {
-            orderBy: { order: "asc" },
-          },
-        },
-        orderBy: { order: "asc" },
-      },
-    },
-  })
+export default function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
+  const { data: session, isLoading: sessionLoading } = useSession();
+  const { data: course, isLoading: courseLoading } = trpc.courses.getBySlug.useQuery({ slug });
+  
+  const { data: enrollmentStatus, isLoading: statusLoading } = trpc.courses.getEnrollmentStatus.useQuery(
+    { courseId: course?.id || "" },
+    { enabled: !!course?.id && !!session }
+  );
+
+  const isLoading = sessionLoading || courseLoading || (!!session && !!course && statusLoading);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!course) {
-    notFound()
+    return (
+      <div className="flex h-screen flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold">Course not found</h1>
+        <Link href="/dashboard" className="mt-4">
+          <Button>Back to Dashboard</Button>
+        </Link>
+      </div>
+    );
   }
 
-  let enrollment = null
-  if (session) {
-    enrollment = await prisma.enrollment.findUnique({
-      where: {
-        userId_courseId: {
-          userId: session.user.id,
-          courseId: course.id,
-        },
-      },
-    })
-  }
-
-  const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0)
+  const enrollment = enrollmentStatus?.enrollment;
+  const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -149,5 +149,5 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
         </div>
       </main>
     </div>
-  )
+  );
 }

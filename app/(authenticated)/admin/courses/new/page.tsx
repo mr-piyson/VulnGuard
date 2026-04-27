@@ -1,18 +1,27 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import CourseForm from "@/components/admin/course-form"
+"use client";
 
-export default async function NewCoursePage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+import CourseForm from "@/components/admin/course-form";
+import { trpc } from "@/lib/trpc/client";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-  if (!session) {
-    redirect("/dashboard")
-  }else {
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } })
-    if (user?.role !== "admin") {
-      redirect("/dashboard")
+export default function NewCoursePage() {
+  const router = useRouter();
+  const { data: user, isLoading } = trpc.users.me.useQuery();
+
+  useEffect(() => {
+    if (!isLoading && (!user || user.role !== "admin")) {
+      router.push("/dashboard");
     }
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user || user.role !== "admin") {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
@@ -27,5 +36,5 @@ export default async function NewCoursePage() {
         <CourseForm />
       </main>
     </div>
-  )
+  );
 }

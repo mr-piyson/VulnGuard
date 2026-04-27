@@ -36,7 +36,7 @@ interface TestResult {
   id: string
   score: number
   passed: boolean
-  completedAt: Date
+  completedAt: Date | string
 }
 
 interface TestInterfaceProps {

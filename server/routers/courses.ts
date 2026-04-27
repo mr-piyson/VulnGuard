@@ -28,6 +28,12 @@ export const coursesRouter = router({
               ]
             : undefined,
         },
+        include: {
+          modules: true,
+          _count: {
+            select: { enrollments: true },
+          },
+        },
         take: limit + 1,
         orderBy: {
           createdAt: "desc",
@@ -104,7 +110,15 @@ export const coursesRouter = router({
         userId,
       },
       include: {
-        course: true,
+        course: {
+          include: {
+            modules: {
+              include: {
+                lessons: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         enrolledAt: "desc",
@@ -171,5 +185,21 @@ export const coursesRouter = router({
       });
 
       return { ...lesson, progress };
+    }),
+
+  getCourseFullProgress: protectedProcedure
+    .input(z.object({ courseId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const progress = await prisma.progress.findMany({
+        where: {
+          userId: ctx.session.user.id,
+          lesson: {
+            module: {
+              courseId: input.courseId,
+            },
+          },
+        },
+      });
+      return progress;
     }),
 });

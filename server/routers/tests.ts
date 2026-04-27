@@ -111,4 +111,56 @@ export const testsRouter = router({
         feedback,
       };
     }),
+
+  getOrCreate: protectedProcedure
+    .input(z.object({ courseId: z.string() }))
+    .mutation(async ({ input }) => {
+      const { courseId } = input;
+
+      let test = await prisma.test.findFirst({
+        where: { courseId },
+        include: {
+          questions: {
+            orderBy: { order: "asc" },
+          },
+        },
+      });
+
+      if (!test) {
+        const course = await prisma.course.findUnique({
+          where: { id: courseId },
+        });
+
+        if (!course) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Course not found" });
+        }
+
+        test = await prisma.test.create({
+          data: {
+            courseId,
+            title: `${course.title} - Final Assessment`,
+            description: "Test your knowledge of the course material",
+            passingScore: 70,
+            timeLimit: 30,
+          },
+          include: {
+            questions: true,
+          },
+        });
+      }
+
+      return test;
+    }),
+
+  getResults: protectedProcedure
+    .input(z.object({ testId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      return await prisma.testResult.findMany({
+        where: {
+          userId: ctx.session.user.id,
+          testId: input.testId,
+        },
+        orderBy: { completedAt: "desc" },
+      });
+    }),
 });

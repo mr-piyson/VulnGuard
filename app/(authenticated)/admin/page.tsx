@@ -1,13 +1,19 @@
-import { prisma } from "@/lib/db"
-import AdminOverview from "@/components/admin/admin-overview"
+"use client";
 
-export default async function AdminDashboardPage() {
-  const [coursesCount, usersCount, enrollmentsCount, certificatesCount] = await Promise.all([
-    prisma.course.count(),
-    prisma.user.count(),
-    prisma.enrollment.count(),
-    prisma.certificate.count()
-  ])
+import { trpc } from "@/lib/trpc/client";
+import AdminOverview from "@/components/admin/admin-overview";
+import { Loader2 } from "lucide-react";
+
+export default function AdminDashboardPage() {
+  const { data: stats, isLoading } = trpc.admin.getStats.useQuery();
+
+  if (isLoading || !stats) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -15,12 +21,7 @@ export default async function AdminDashboardPage() {
         <h2 className="text-2xl font-bold tracking-tight">Admin Dashboard</h2>
         <p className="text-muted-foreground text-sm">Monitor platform health and key business metrics.</p>
       </div>
-      <AdminOverview stats={{
-        coursesCount,
-        usersCount,
-        enrollmentsCount,
-        certificatesCount
-      }} />
+      <AdminOverview stats={stats} />
     </div>
-  )
+  );
 }

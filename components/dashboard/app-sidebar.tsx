@@ -56,7 +56,7 @@ export function AppSidebar({ user, activeTab, setActiveTab }: AppSidebarProps) {
             <ShieldCheck className="size-5" />
           </div>
           <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
-            <span className="font-bold text-foreground">VulnGuard</span>
+            <span className="font-bold text-foreground">TeachNLearn</span>
             <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">LMS Platform</span>
           </div>
         </div>

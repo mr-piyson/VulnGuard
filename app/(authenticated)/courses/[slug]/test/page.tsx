@@ -1,72 +1,56 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { prisma } from "@/lib/db"
-import { notFound } from "next/navigation"
-import TestInterface from "@/components/assessment/test-interface"
+"use client";
 
-export default async function TestPage({ params }: { params: { slug: string } }) {
-  const session = await auth.api.getSession({ headers: await headers() })
+import { use, useEffect, useState } from "react";
+import TestInterface from "@/components/assessment/test-interface";
+import { trpc } from "@/lib/trpc/client";
+import { Loader2 } from "lucide-react";
+import { useSession } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
-  if (!session) {
-    redirect("/auth/signin")
+export default function TestPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
+  const router = useRouter();
+  const { data: session, isPending: sessionLoading } = useSession();
+
+  const { data: course, isLoading: courseLoading } = trpc.courses.getBySlug.useQuery({ slug });
+  const { data: enrollmentStatus, isLoading: statusLoading } = trpc.courses.getEnrollmentStatus.useQuery({ courseId: course?.id || "" }, { enabled: !!course?.id && !!session });
+
+  const [test, setTest] = useState<any>(null);
+  const getOrCreateMutation = trpc.tests.getOrCreate.useMutation();
+  const { data: previousResults, isLoading: resultsLoading, refetch: refetchResults } = trpc.tests.getResults.useQuery({ testId: test?.id || "" }, { enabled: !!test?.id });
+
+  useEffect(() => {
+    if (course?.id && session && enrollmentStatus?.isEnrolled && !test) {
+      getOrCreateMutation.mutate(
+        { courseId: course.id },
+        {
+          onSuccess: (data) => setTest(data),
+        },
+      );
+    }
+  }, [course, session, enrollmentStatus, test]);
+
+  useEffect(() => {
+    if (!sessionLoading && !session) {
+      router.push("/auth/signin");
+    } else if (course && !courseLoading && enrollmentStatus && !statusLoading && !enrollmentStatus.isEnrolled) {
+      router.push(`/courses/${slug}`);
+    }
+  }, [session, sessionLoading, course, courseLoading, enrollmentStatus, statusLoading, router, slug]);
+
+  const isLoading = sessionLoading || courseLoading || statusLoading || (!!enrollmentStatus?.isEnrolled && !test) || (!!test && resultsLoading);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
-  const course = await prisma.course.findUnique({
-    where: { slug: (await params).slug },
-  })
-
-  if (!course) {
-    notFound()
+  if (!course || !test) {
+    return null;
   }
 
-  const enrollment = await prisma.enrollment.findUnique({
-    where: {
-      userId_courseId: {
-        userId: session.user.id,
-        courseId: course.id,
-      },
-    },
-  })
-
-  if (!enrollment) {
-    redirect(`/courses/${params.slug}`)
-  }
-
-  // Get or create test for this course
-  let test = await prisma.test.findFirst({
-    where: { courseId: course.id },
-    include: {
-      questions: {
-        orderBy: { order: "asc" },
-      },
-    },
-  })
-
-  // If no test exists, create a default one
-  if (!test) {
-    test = await prisma.test.create({
-      data: {
-        courseId: course.id,
-        title: `${course.title} - Final Assessment`,
-        description: "Test your knowledge of the course material",
-        passingScore: 70,
-        timeLimit: 30,
-      },
-      include: {
-        questions: true,
-      },
-    })
-  }
-
-  // Check for previous attempts
-  const previousResults = await prisma.testResult.findMany({
-    where: {
-      userId: session.user.id,
-      testId: test.id,
-    },
-    orderBy: { completedAt: "desc" },
-  })
-
-  return <TestInterface course={course} test={test} previousResults={previousResults} userId={session.user.id} />
+  return <TestInterface course={course} test={test} previousResults={previousResults || []} userId={session?.user.id || ""} />;
 }

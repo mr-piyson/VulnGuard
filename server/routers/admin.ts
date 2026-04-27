@@ -3,6 +3,59 @@ import { router, adminProcedure } from "../trpc";
 import { prisma } from "@/lib/db";
 
 export const adminRouter = router({
+  getStats: adminProcedure.query(async () => {
+    const [coursesCount, usersCount, enrollmentsCount, certificatesCount] = await Promise.all([
+      prisma.course.count(),
+      prisma.user.count(),
+      prisma.enrollment.count(),
+      prisma.certificate.count(),
+    ]);
+
+    return {
+      coursesCount,
+      usersCount,
+      enrollmentsCount,
+      certificatesCount,
+    };
+  }),
+
+  getAllCourses: adminProcedure.query(async () => {
+    return await prisma.course.findMany({
+      include: {
+        modules: true,
+        _count: {
+          select: { enrollments: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }),
+
+  getCourseById: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      return await prisma.course.findUnique({
+        where: { id: input.id },
+        include: {
+          modules: {
+            include: {
+              lessons: {
+                orderBy: { order: "asc" },
+              },
+            },
+            orderBy: { order: "asc" },
+          },
+          test: {
+            include: {
+              questions: {
+                orderBy: { order: "asc" },
+              },
+            },
+          },
+        },
+      });
+    }),
+
   createCourse: adminProcedure
     .input(
       z.object({

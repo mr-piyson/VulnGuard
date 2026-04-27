@@ -1,6 +1,8 @@
-import UserManagement from "@/components/users/user-management"
+"use client";
 
-export default async function AdminUsersPage() {
+import UserManagement from "@/components/users/user-management";
+
+export default function AdminUsersPage() {
   return (
     <div className="bg-card border rounded-xl p-6 shadow-sm">
       <div className="mb-6">
@@ -10,5 +12,5 @@ export default async function AdminUsersPage() {
       
       <UserManagement currentRole="admin" />
     </div>
-  )
+  );
 }

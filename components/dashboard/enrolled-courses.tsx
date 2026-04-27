@@ -7,8 +7,8 @@ import Link from "next/link";
 interface Enrollment {
   id: string;
   progress: number;
-  enrolledAt: Date;
-  completedAt: Date | null;
+  enrolledAt: Date | string;
+  completedAt: Date | string | null;
   course: {
     id: string;
     title: string;

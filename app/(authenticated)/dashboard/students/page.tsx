@@ -1,21 +1,27 @@
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { prisma } from "@/lib/db"
-import UserManagement from "@/components/users/user-management"
-import { redirect } from "next/navigation"
+"use client";
 
-export default async function StudentManagementPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  
-  if (!session) return null
+import { trpc } from "@/lib/trpc/client";
+import UserManagement from "@/components/users/user-management";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  })
+export default function StudentManagementPage() {
+  const router = useRouter();
+  const { data: user, isLoading } = trpc.users.me.useQuery();
 
-  if (user?.role !== "teacher" && user?.role !== "admin") {
-    redirect("/dashboard")
+  useEffect(() => {
+    if (!isLoading && user && user.role !== "teacher" && user.role !== "admin") {
+      router.push("/dashboard");
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
@@ -24,7 +30,7 @@ export default async function StudentManagementPage() {
         <h2 className="text-xl font-bold">User Directory</h2>
         <p className="text-sm text-muted-foreground">Manage the teachers and students assigned to the platform.</p>
       </div>
-      <UserManagement currentRole={user?.role || "student"} />
+      <UserManagement currentRole={user.role || "student"} />
     </div>
-  )
+  );
 }

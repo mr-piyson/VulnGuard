@@ -5,6 +5,12 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 
 export const usersRouter = router({
+  me: protectedProcedure.query(async ({ ctx }) => {
+    return await prisma.user.findUnique({
+      where: { id: ctx.session.user.id },
+    });
+  }),
+
   getManagedUsers: teacherProcedure.query(async ({ ctx }) => {
     const { session, userRole } = ctx;
 

@@ -1,27 +1,19 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { prisma } from "@/lib/db";
+"use client";
+
+import { trpc } from "@/lib/trpc/client";
 import EnrolledCourses from "@/components/dashboard/enrolled-courses";
+import { Loader2 } from "lucide-react";
 
-export default async function DashboardPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
+export default function DashboardPage() {
+  const { data: enrolledCourses, isLoading } = trpc.courses.getEnrolled.useQuery();
 
-  if (!session) return null; // Handled by layout
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
-  const enrolledCourses = await prisma.enrollment.findMany({
-    where: { userId: session.user.id },
-    include: {
-      course: {
-        include: {
-          modules: {
-            include: {
-              lessons: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  return <EnrolledCourses enrollments={enrolledCourses} userId={session.user.id} />;
+  return <EnrolledCourses enrollments={enrolledCourses || []} userId="" />;
 }

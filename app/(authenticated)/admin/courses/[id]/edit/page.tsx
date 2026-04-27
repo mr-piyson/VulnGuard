@@ -1,52 +1,36 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { prisma } from "@/lib/db"
-import { notFound } from "next/navigation"
-import CourseForm from "@/components/admin/course-form"
-import ModuleManager from "@/components/admin/module-manager"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+"use client";
 
-import TestManager from "@/components/admin/test-manager"
+import { use, useEffect } from "react";
+import CourseForm from "@/components/admin/course-form";
+import ModuleManager from "@/components/admin/module-manager";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TestManager from "@/components/admin/test-manager";
+import { trpc } from "@/lib/trpc/client";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-export default async function EditCoursePage({ params }: { params: { id: string } }) {
-  const session = await auth.api.getSession({ headers: await headers() })
+export default function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter();
+  const { id } = use(params);
+  
+  const { data: user, isLoading: userLoading } = trpc.users.me.useQuery();
+  const { data: course, isLoading: courseLoading } = trpc.admin.getCourseById.useQuery({ id });
 
-  if (!session) {
-    redirect("/dashboard")
-  }else {
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } })
-    if (user?.role !== "admin") {
-      redirect("/dashboard")
+  useEffect(() => {
+    if (!userLoading && (!user || user.role !== "admin")) {
+      router.push("/dashboard");
     }
+  }, [user, userLoading, router]);
+
+  if (userLoading || courseLoading || !user || user.role !== "admin" || !course) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
-  const course = await prisma.course.findUnique({
-    where: { id: params.id },
-    include: {
-      modules: {
-        include: {
-          lessons: {
-            orderBy: { order: "asc" },
-          },
-        },
-        orderBy: { order: "asc" },
-      },
-      test: {
-        include: {
-          questions: {
-            orderBy: { order: "asc" },
-          },
-        },
-      },
-    },
-  })
-
-  if (!course) {
-    notFound()
-  }
-
-  const test = course.test?.[0] || null
+  const test = course.test?.[0] || null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -78,5 +62,5 @@ export default async function EditCoursePage({ params }: { params: { id: string 
         </Tabs>
       </main>
     </div>
-  )
+  );
 }
