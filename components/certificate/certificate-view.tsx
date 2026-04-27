@@ -11,7 +11,7 @@ interface CertificateViewProps {
   certificate: {
     id: string;
     certificateNumber: string;
-    issuedAt: Date;
+    issuedAt: Date | string;
   };
   course: {
     id: string;

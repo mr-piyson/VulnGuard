@@ -1,36 +1,44 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { prisma } from "@/lib/db"
-import { notFound } from "next/navigation"
-import CertificateView from "@/components/certificate/certificate-view"
-import { trpc } from "@/lib/trpc/server"
+"use client";
 
-export default async function CertificatePage({ params }: { params: { slug: string } }) {
-  const session = await auth.api.getSession({ headers: await headers() })
+import { use, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { trpc } from "@/lib/trpc/client";
+import CertificateView from "@/components/certificate/certificate-view";
+import { Loader2 } from "lucide-react";
 
-  if (!session) {
-    redirect("/auth/signin")
-  }
+export default function CertificateClientPage({ params }: { params: Promise<{ slug: string }> }) {
+  const router = useRouter();
+  const { slug } = use(params);
 
-  const course = await prisma.course.findUnique({
-    where: { slug: (await params).slug },
-  })
+  // 1. Fetch the course (this is a Query)
+  const { data: course, isLoading: courseLoading } = trpc.courses.getBySlug.useQuery({ slug });
 
-  if (!course) {
-    notFound()
-  }
+  // 2. Setup the mutation (this is a Mutation)
+  const getOrCreateMutation = trpc.certificates.getOrCreate.useMutation({
+    onError: (error) => {
+      if (error.message === "Test not found for this course") {
+        router.push(`/courses/${slug}`);
+      } else if (error.message === "You must pass the test to earn a certificate") {
+        router.push(`/courses/${slug}/test`);
+      }
+    },
+  });
 
-  try {
-    const certificate = await trpc.certificates.getOrCreate({ courseId: course.id });
-    return <CertificateView certificate={certificate} course={course} user={session.user as any} />
-  } catch (error: any) {
-    if (error.message === "Test not found for this course") {
-      redirect(`/courses/${(await params).slug}`)
+  // 3. Trigger the mutation once the course data is ready
+  useEffect(() => {
+    if (course?.id) {
+      getOrCreateMutation.mutate({ courseId: course.id });
     }
-    if (error.message === "You must pass the test to earn a certificate") {
-      redirect(`/courses/${(await params).slug}/test`)
-    }
-    throw error;
+  }, [course?.id]);
+
+  // 4. Handle states
+  if (courseLoading || !course || getOrCreateMutation.isPending || !getOrCreateMutation.data) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
+
+  return <CertificateView certificate={getOrCreateMutation.data} course={course} user={getOrCreateMutation.data.user} />;
 }
