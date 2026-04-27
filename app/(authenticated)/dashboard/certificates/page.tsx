@@ -1,21 +1,22 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Award } from "lucide-react"
-import Link from "next/link"
-import { trpc } from "@/lib/trpc/server"
-import CertificateCard from "@/components/certificate/certificate-card"
+"use client";
 
-export default async function CertificatesPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Award, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { trpc } from "@/lib/trpc/client";
+import CertificateCard from "@/components/certificate/certificate-card";
 
-  if (!session) {
-    redirect("/auth/signin")
+export default function CertificatesPage() {
+  const { data: certificates, isLoading } = trpc.certificates.getAll.useQuery();
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
-
-  const certificates = await trpc.certificates.getAll();
 
   return (
     <div className="space-y-6">
@@ -24,7 +25,7 @@ export default async function CertificatesPage() {
         <p className="text-muted-foreground text-sm">View and download your earned certificates</p>
       </div>
 
-      {certificates.length === 0 ? (
+      {!certificates || certificates.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Award className="h-12 w-12 text-muted-foreground mb-4" />
@@ -38,10 +39,10 @@ export default async function CertificatesPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {certificates.map((certificate) => (
-            <CertificateCard key={certificate.id} certificate={certificate as any} />
+            <CertificateCard key={certificate.id} certificate={certificate} />
           ))}
         </div>
       )}
     </div>
-  )
+  );
 }
