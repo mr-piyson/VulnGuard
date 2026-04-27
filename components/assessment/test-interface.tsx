@@ -101,7 +101,30 @@ export default function TestInterface({ course, test, previousResults }: TestInt
   }
 
   const answeredCount = Object.keys(answers).length
-  const progressPercentage = (answeredCount / test.questions.length) * 100
+  const progressPercentage = test.questions.length > 0 ? (answeredCount / test.questions.length) * 100 : 0
+
+  if (test.questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <Card className="max-w-md w-full border-primary/20 bg-muted/30">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 bg-muted p-3 rounded-full w-fit">
+              <AlertCircle className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <CardTitle className="text-2xl">Test Not Available</CardTitle>
+            <CardDescription>
+              This assessment doesn't have any questions yet. Please check back later or contact your instructor.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href={`/courses/${course.slug}/learn`}>
+              <Button className="w-full">Return to Learning</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   if (!started) {
     return (
