@@ -1,6 +1,7 @@
 import type React from "react";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+// @ts-ignore
 import "./globals.css";
 
 const inter = Inter({
@@ -21,13 +22,15 @@ export const metadata: Metadata = {
 
 import { TRPCProvider } from "@/lib/trpc/Provider";
 import { ToastProvider } from "@/components/ui/toast";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="font-sans antialiased">
         <TRPCProvider>
-          <ToastProvider>{children}</ToastProvider>
+          {children}
+          <Toaster position="top-center" />
         </TRPCProvider>
       </body>
     </html>
