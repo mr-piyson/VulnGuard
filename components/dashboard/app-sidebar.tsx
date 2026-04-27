@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BookOpen, LayoutDashboard, Search, Users, ShieldCheck } from "lucide-react";
+import { BookOpen, LayoutDashboard, Search, Users, ShieldCheck, Award } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -68,6 +68,7 @@ export function AppSidebar({ user, activeTab, setActiveTab }: AppSidebarProps) {
             <SidebarMenu>
               <NavItem id="my-courses" href="/dashboard" icon={LayoutDashboard} label="My Courses" tooltip="My Courses" />
               <NavItem id="browse" href="/dashboard/browse" icon={Search} label="Browse Courses" tooltip="Browse Courses" />
+              <NavItem id="certificates" href="/dashboard/certificates" icon={Award} label="Certificates" tooltip="Certificates" />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
