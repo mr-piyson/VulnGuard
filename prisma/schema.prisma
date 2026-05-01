@@ -6,21 +6,20 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
-  id            String    @id
+  id            String   @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean  @default(false)
   image         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
-  role          String?   @default("student")
+  role          String?  @default("student")
   teacherId     String?
-  teacher       User?     @relation("TeacherStudents", fields: [teacherId], references: [id])
-  students      User[]    @relation("TeacherStudents")
+  teacher       User?    @relation("TeacherStudents", fields: [teacherId], references: [id])
+  students      User[]   @relation("TeacherStudents")
 
   sessions    Session[]
   accounts    Account[]
@@ -179,10 +178,10 @@ model Test {
   timeLimit    Int? // minutes
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  
-  course       Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  questions    Question[]
-  results      TestResult[]
+
+  course    Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  questions Question[]
+  results   TestResult[]
 }
 
 model Question {
