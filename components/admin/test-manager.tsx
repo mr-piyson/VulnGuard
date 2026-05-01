@@ -10,6 +10,8 @@ import { Plus, Trash, Edit2, Check, X, Award } from "lucide-react"
 import { trpc } from "@/lib/trpc/client"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Markdown } from "@/components/ui/markdown"
 
 interface Question {
   id: string
@@ -233,13 +235,33 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-4">
-               <div className="md:col-span-3 space-y-2">
-                <Label>Question Text</Label>
-                <Textarea
-                  value={newQuestion.question}
-                  onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
-                  placeholder="Enter the question..."
-                />
+              <div className="md:col-span-3 space-y-2">
+                <Tabs defaultValue="edit" className="w-full">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>Question Text</Label>
+                    <TabsList className="h-8">
+                      <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
+                      <TabsTrigger value="preview" className="text-xs">Preview</TabsTrigger>
+                    </TabsList>
+                  </div>
+                  <TabsContent value="edit" className="mt-0">
+                    <Textarea
+                      value={newQuestion.question}
+                      onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
+                      placeholder="Enter the question (Markdown supported)..."
+                      className="min-h-[100px]"
+                    />
+                  </TabsContent>
+                  <TabsContent value="preview" className="mt-0">
+                    <div className="border rounded-md p-3 bg-muted/20 min-h-[100px]">
+                      {newQuestion.question ? (
+                        <Markdown content={newQuestion.question} className="prose-sm" />
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">No content to preview</p>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
               <div className="space-y-2">
                 <Label>Points</Label>
@@ -282,13 +304,32 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
             </div>
 
             <div className="space-y-2">
-              <Label>Explanation (Optional)</Label>
-              <Textarea
-                value={newQuestion.explanation}
-                onChange={(e) => setNewQuestion({ ...newQuestion, explanation: e.target.value })}
-                placeholder="Explain why the answer is correct..."
-                rows={2}
-              />
+              <Tabs defaultValue="edit" className="w-full">
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Explanation (Optional)</Label>
+                  <TabsList className="h-8">
+                    <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
+                    <TabsTrigger value="preview" className="text-xs">Preview</TabsTrigger>
+                  </TabsList>
+                </div>
+                <TabsContent value="edit" className="mt-0">
+                  <Textarea
+                    value={newQuestion.explanation}
+                    onChange={(e) => setNewQuestion({ ...newQuestion, explanation: e.target.value })}
+                    placeholder="Explain why the answer is correct..."
+                    rows={2}
+                  />
+                </TabsContent>
+                <TabsContent value="preview" className="mt-0">
+                  <div className="border rounded-md p-3 bg-muted/20 min-h-[60px]">
+                    {newQuestion.explanation ? (
+                      <Markdown content={newQuestion.explanation} className="prose-sm" />
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No explanation to preview</p>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
 
             <div className="flex gap-2 pt-2">
@@ -340,11 +381,27 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
         <CardContent className="space-y-4 pb-4">
            <div className="grid gap-4 md:grid-cols-4">
                <div className="md:col-span-3 space-y-2">
-                <Label>Question Text</Label>
-                <Textarea
-                  value={editedData.question}
-                  onChange={(e) => setEditedData({ ...editedData, question: e.target.value })}
-                />
+                <Tabs defaultValue="edit" className="w-full">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>Question Text</Label>
+                    <TabsList className="h-8">
+                      <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
+                      <TabsTrigger value="preview" className="text-xs">Preview</TabsTrigger>
+                    </TabsList>
+                  </div>
+                  <TabsContent value="edit" className="mt-0">
+                    <Textarea
+                      value={editedData.question}
+                      onChange={(e) => setEditedData({ ...editedData, question: e.target.value })}
+                      className="min-h-[100px]"
+                    />
+                  </TabsContent>
+                  <TabsContent value="preview" className="mt-0">
+                    <div className="border rounded-md p-3 bg-muted/20 min-h-[100px]">
+                      <Markdown content={editedData.question} className="prose-sm" />
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
               <div className="space-y-2">
                 <Label>Points</Label>
@@ -382,12 +439,31 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
           </div>
 
           <div className="space-y-2">
-            <Label>Explanation</Label>
-            <Textarea
-              value={editedData.explanation}
-              onChange={(e) => setEditedData({ ...editedData, explanation: e.target.value })}
-              rows={2}
-            />
+            <Tabs defaultValue="edit" className="w-full">
+              <div className="flex items-center justify-between mb-2">
+                <Label>Explanation</Label>
+                <TabsList className="h-8">
+                  <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
+                  <TabsTrigger value="preview" className="text-xs">Preview</TabsTrigger>
+                </TabsList>
+              </div>
+              <TabsContent value="edit" className="mt-0">
+                <Textarea
+                  value={editedData.explanation}
+                  onChange={(e) => setEditedData({ ...editedData, explanation: e.target.value })}
+                  rows={2}
+                />
+              </TabsContent>
+              <TabsContent value="preview" className="mt-0">
+                <div className="border rounded-md p-3 bg-muted/20 min-h-[60px]">
+                  {editedData.explanation ? (
+                    <Markdown content={editedData.explanation} className="prose-sm" />
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">No explanation to preview</p>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
 
           <div className="flex gap-2 pt-2">
@@ -420,7 +496,9 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
                 {question.points} {question.points === 1 ? "point" : "points"}
               </Badge>
             </div>
-            <CardTitle className="text-lg leading-tight">{question.question}</CardTitle>
+            <CardTitle className="text-lg leading-tight">
+              <Markdown content={question.question} className="prose-sm" />
+            </CardTitle>
           </div>
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button size="icon" variant="ghost" onClick={onEdit} className="h-8 w-8">
@@ -461,7 +539,7 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
               <Award className="h-3 w-3" />
               <span>Explanation</span>
             </div>
-            {question.explanation}
+            <Markdown content={question.explanation} className="prose-sm" />
           </div>
         )}
       </CardContent>

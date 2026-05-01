@@ -5,6 +5,11 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --port 5231 --turbopack",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:push": "prisma db push",
+    "sync": "npm run db:migrate && npm run db:push",
     "lint": "next lint",
     "start": "next start"
   },

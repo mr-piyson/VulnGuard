@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Trash, Pencil, X, Check } from "lucide-react"
 import { trpc } from "@/lib/trpc/client"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Markdown } from "@/components/ui/markdown"
 
 interface Lesson {
   id: string
@@ -124,17 +126,37 @@ export default function LessonManager({ moduleId, lessons: initialLessons = [] }
               />
             </div>
             <div className="space-y-2">
-              <Label>Content (Markdown)</Label>
-              <Textarea
-                value={editingLessonId ? editForm.content : newLesson.content}
-                onChange={(e) => 
-                  editingLessonId 
-                    ? setEditForm({ ...editForm, content: e.target.value })
-                    : setNewLesson({ ...newLesson, content: e.target.value })
-                }
-                placeholder="Lesson content in markdown format..."
-                rows={10}
-              />
+              <Tabs defaultValue="edit" className="w-full">
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Content (Markdown)</Label>
+                  <TabsList className="h-8">
+                    <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
+                    <TabsTrigger value="preview" className="text-xs">Preview</TabsTrigger>
+                  </TabsList>
+                </div>
+                <TabsContent value="edit" className="mt-0">
+                  <Textarea
+                    value={editingLessonId ? editForm.content : newLesson.content}
+                    onChange={(e) => 
+                      editingLessonId 
+                        ? setEditForm({ ...editForm, content: e.target.value })
+                        : setNewLesson({ ...newLesson, content: e.target.value })
+                    }
+                    placeholder="Lesson content in markdown format..."
+                    rows={10}
+                    className="min-h-[200px]"
+                  />
+                </TabsContent>
+                <TabsContent value="preview" className="mt-0">
+                  <div className="border rounded-md p-4 bg-muted/20 min-h-[200px]">
+                    {(editingLessonId ? editForm.content : newLesson.content) ? (
+                      <Markdown content={editingLessonId ? editForm.content! : newLesson.content} />
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No content to preview</p>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
             <div className="space-y-2">
               <Label>Duration (minutes)</Label>
