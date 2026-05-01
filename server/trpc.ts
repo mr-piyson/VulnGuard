@@ -1,21 +1,18 @@
-import { initTRPC, TRPCError } from '@trpc/server';
-import { ZodError } from 'zod';
-import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/db';
-import { headers } from 'next/headers';
-
+import { initTRPC, TRPCError } from "@trpc/server";
+import { ZodError } from "zod";
+import { prisma } from "@/lib/db";
+import type { Context } from "./context"; // adjust path
 /**
  * Initialization of tRPC backend
  * Should be done only once per app!
  */
-const t = initTRPC.create({
+const t = initTRPC.context<Context>().create({
   errorFormatter({ shape, error }) {
     return {
       ...shape,
       data: {
         ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
+        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
       },
     };
   },
@@ -32,17 +29,13 @@ export const publicProcedure = t.procedure;
  * Protected procedure
  */
 export const protectedProcedure = t.procedure.use(async (opts) => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  if (!opts.ctx.session) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
   return opts.next({
     ctx: {
-      session,
+      session: opts.ctx.session,
     },
   });
 });
@@ -60,8 +53,8 @@ export const adminProcedure = protectedProcedure.use(async (opts) => {
     },
   });
 
-  if (user?.role !== 'admin') {
-    throw new TRPCError({ code: 'FORBIDDEN' });
+  if (user?.role !== "admin") {
+    throw new TRPCError({ code: "FORBIDDEN" });
   }
 
   return opts.next();
@@ -80,8 +73,8 @@ export const teacherProcedure = protectedProcedure.use(async (opts) => {
     },
   });
 
-  if (user?.role !== 'teacher' && user?.role !== 'admin') {
-    throw new TRPCError({ code: 'FORBIDDEN' });
+  if (user?.role !== "teacher" && user?.role !== "admin") {
+    throw new TRPCError({ code: "FORBIDDEN" });
   }
 
   return opts.next({
