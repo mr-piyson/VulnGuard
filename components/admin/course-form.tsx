@@ -76,7 +76,7 @@ export default function CourseForm({ course }: CourseFormProps) {
     <Card>
       <CardHeader>
         <CardTitle>{course ? "Edit Course" : "Create Course"}</CardTitle>
-        <CardDescription>{course ? "Update course information" : "Add a new VulnGuard course"}</CardDescription>
+        <CardDescription>{course ? "Update course information" : "Add a new TeachNLearn course"}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
