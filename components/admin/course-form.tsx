@@ -99,18 +99,34 @@ export default function CourseForm({ course }: CourseFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="slug">URL Slug</Label>
-            <Input id="slug" value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} placeholder="e.g., auth-identity" required />
+            <Input
+              id="slug"
+              value={formData.slug}
+              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+              placeholder="e.g., auth-identity"
+              required
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Describe what students will learn..." rows={4} required />
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Describe what students will learn..."
+              rows={4}
+              required
+            />
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="difficulty">Difficulty Level</Label>
-              <Select value={formData.difficulty} onValueChange={(value) => setFormData({ ...formData, difficulty: value })}>
+              <Select
+                value={formData.difficulty}
+                onValueChange={(value) => setFormData({ ...formData, difficulty: value })}
+              >
                 <SelectTrigger id="difficulty">
                   <SelectValue />
                 </SelectTrigger>
@@ -124,12 +140,23 @@ export default function CourseForm({ course }: CourseFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="duration">Duration (minutes)</Label>
-              <Input id="duration" type="number" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: Number.parseInt(e.target.value) })} min="1" required />
+              <Input
+                id="duration"
+                type="number"
+                value={formData.duration}
+                onChange={(e) => setFormData({ ...formData, duration: Number.parseInt(e.target.value) })}
+                min="1"
+                required
+              />
             </div>
           </div>
 
           <div className="flex items-center space-x-2">
-            <Switch id="published" checked={formData.isPublished} onCheckedChange={(checked) => setFormData({ ...formData, isPublished: checked })} />
+            <Switch
+              id="published"
+              checked={formData.isPublished}
+              onCheckedChange={(checked) => setFormData({ ...formData, isPublished: checked })}
+            />
             <Label htmlFor="published">Publish course (make visible to students)</Label>
           </div>
 

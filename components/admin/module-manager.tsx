@@ -104,11 +104,20 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Module Title</Label>
-              <Input value={newModule.title} onChange={(e) => setNewModule({ ...newModule, title: e.target.value })} placeholder="e.g., Introduction to Authentication" />
+              <Input
+                value={newModule.title}
+                onChange={(e) => setNewModule({ ...newModule, title: e.target.value })}
+                placeholder="e.g., Introduction to Authentication"
+              />
             </div>
             <div className="space-y-2">
               <Label>Description</Label>
-              <Textarea value={newModule.description} onChange={(e) => setNewModule({ ...newModule, description: e.target.value })} placeholder="Brief description of this module..." rows={3} />
+              <Textarea
+                value={newModule.description}
+                onChange={(e) => setNewModule({ ...newModule, description: e.target.value })}
+                placeholder="Brief description of this module..."
+                rows={3}
+              />
             </div>
             <div className="flex gap-2">
               <Button onClick={handleCreateModule}>Create Module</Button>
@@ -129,19 +138,36 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
                   {editingModuleId === module.id ? (
                     <div className="space-y-3 pr-4">
                       <div className="space-y-1">
-                        <Label className="text-xs uppercase text-muted-foreground font-bold tracking-wider">Module Title</Label>
-                        <Input value={moduleEditForm.title} onChange={(e) => setModuleEditForm({ ...moduleEditForm, title: e.target.value })} className="font-bold" />
+                        <Label className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
+                          Module Title
+                        </Label>
+                        <Input
+                          value={moduleEditForm.title}
+                          onChange={(e) => setModuleEditForm({ ...moduleEditForm, title: e.target.value })}
+                          className="font-bold"
+                        />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs uppercase text-muted-foreground font-bold tracking-wider">Description</Label>
-                        <Textarea value={moduleEditForm.description} onChange={(e) => setModuleEditForm({ ...moduleEditForm, description: e.target.value })} rows={2} />
+                        <Label className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
+                          Description
+                        </Label>
+                        <Textarea
+                          value={moduleEditForm.description}
+                          onChange={(e) => setModuleEditForm({ ...moduleEditForm, description: e.target.value })}
+                          rows={2}
+                        />
                       </div>
                       <div className="flex gap-2 pt-2">
                         <Button size="sm" onClick={handleUpdateModule}>
                           <Check className="h-4 w-4 mr-2" />
                           Save
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => setEditingModuleId(null)} className="bg-transparent">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingModuleId(null)}
+                          className="bg-transparent"
+                        >
                           <X className="h-4 w-4 mr-2" />
                           Cancel
                         </Button>
@@ -150,7 +176,9 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
                   ) : (
                     <>
                       <CardTitle className="flex items-center gap-2">
-                        <span className="text-muted-foreground text-sm font-normal tracking-tight">MODULE {index + 1}</span>
+                        <span className="text-muted-foreground text-sm font-normal tracking-tight">
+                          MODULE {index + 1}
+                        </span>
                         {module.title}
                       </CardTitle>
                       <CardDescription className="line-clamp-2 mt-1">{module.description}</CardDescription>
@@ -163,13 +191,26 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
                       <Button size="sm" variant="ghost" onClick={() => handleStartModuleEdit(module)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteModule(module.id)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDeleteModule(module.id)}
+                      >
                         <Trash className="h-4 w-4" />
                       </Button>
                     </>
                   )}
-                  <Button size="sm" variant="ghost" onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)}>
-                    {expandedModule === module.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)}
+                  >
+                    {expandedModule === module.id ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>

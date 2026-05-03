@@ -46,7 +46,14 @@ interface LearningInterfaceProps {
   isCompleted: boolean;
 }
 
-export default function LearningInterface({ course, modules, currentLesson, allLessons, progressMap: initialProgressMap, isCompleted: initialCompleted }: LearningInterfaceProps) {
+export default function LearningInterface({
+  course,
+  modules,
+  currentLesson,
+  allLessons,
+  progressMap: initialProgressMap,
+  isCompleted: initialCompleted,
+}: LearningInterfaceProps) {
   const router = useRouter();
   const utils = trpc.useUtils();
   const mainRef = useRef<HTMLDivElement | null>(null);
@@ -134,8 +141,16 @@ export default function LearningInterface({ course, modules, currentLesson, allL
                   const isActive = lesson.id === currentLesson.id;
 
                   return (
-                    <button key={lesson.id} onClick={() => navigateToLesson(lesson.id)} className={`w-full text-left p-3 rounded-lg flex items-center gap-3 transition-colors ${isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
-                      {lessonProgress?.completed ? <CheckCircle className="h-4 w-4 shrink-0 text-primary" /> : <Circle className="h-4 w-4 flex-shrink-0" />}
+                    <button
+                      key={lesson.id}
+                      onClick={() => navigateToLesson(lesson.id)}
+                      className={`w-full text-left p-3 rounded-lg flex items-center gap-3 transition-colors ${isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+                    >
+                      {lessonProgress?.completed ? (
+                        <CheckCircle className="h-4 w-4 shrink-0 text-primary" />
+                      ) : (
+                        <Circle className="h-4 w-4 shrink-0" />
+                      )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{lesson.title}</p>
                         <p className="text-xs opacity-80">{lesson.duration} min</p>
@@ -180,7 +195,13 @@ export default function LearningInterface({ course, modules, currentLesson, allL
           </div>
         </div>
 
-        <Button onClick={handleMarkComplete} disabled={marking} variant={isCompleted ? "outline" : "default"} size="sm" className={isCompleted ? "bg-transparent" : ""}>
+        <Button
+          onClick={handleMarkComplete}
+          disabled={marking}
+          variant={isCompleted ? "outline" : "default"}
+          size="sm"
+          className={isCompleted ? "bg-transparent" : ""}
+        >
           {isCompleted ? (
             <>
               <CheckCircle className="h-4 w-4 mr-2" />

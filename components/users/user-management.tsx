@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 import { trpc } from "@/lib/trpc/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,13 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, UserCog, UserMinus, Trash2, UserPlus, Pencil, Mail, User } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -71,7 +58,7 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
     },
     onError: (err) => {
       toast.error(err.message || "Failed to create user");
-    }
+    },
   });
 
   const updateUserMutation = trpc.users.updateUser.useMutation({
@@ -83,7 +70,7 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
     },
     onError: (err) => {
       toast.error(err.message || "Failed to update user");
-    }
+    },
   });
 
   const deleteUserMutation = trpc.users.deleteUser.useMutation({
@@ -157,13 +144,11 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
                 Add {currentRole === "teacher" ? "Student" : "User"}
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-106.25">
               <form onSubmit={onCreateSubmit}>
                 <DialogHeader>
                   <DialogTitle>Create New User</DialogTitle>
-                  <DialogDescription>
-                    Add a new teacher or student to the platform.
-                  </DialogDescription>
+                  <DialogDescription>Add a new teacher or student to the platform.</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
@@ -216,7 +201,9 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
                   ) : (
                     <div className="bg-muted/50 p-3 rounded-lg border flex items-center justify-between">
                       <span className="text-sm font-medium">Account Role</span>
-                      <Badge variant="outline" className="bg-background uppercase text-[10px] font-bold tracking-wider">Student</Badge>
+                      <Badge variant="outline" className="bg-background uppercase text-[10px] font-bold tracking-wider">
+                        Student
+                      </Badge>
                     </div>
                   )}
 
@@ -252,33 +239,20 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <form onSubmit={onEditSubmit}>
             <DialogHeader>
               <DialogTitle>Edit User</DialogTitle>
-              <DialogDescription>
-                Update user information and permissions.
-              </DialogDescription>
+              <DialogDescription>Update user information and permissions.</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-name">Full Name</Label>
-                <Input
-                  id="edit-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
+                <Input id="edit-name" value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-email">Email Address</Label>
-                <Input
-                  id="edit-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                <Input id="edit-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-password">New Password (Leave blank to keep current)</Label>
@@ -340,7 +314,7 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead className="w-[250px]">User</TableHead>
+              <TableHead className="w-62.5">User</TableHead>
               <TableHead>Role</TableHead>
               {isAdmin && <TableHead>Assigned Teacher</TableHead>}
               <TableHead className="text-right">Actions</TableHead>
@@ -368,13 +342,13 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge 
-                      variant="outline" 
+                    <Badge
+                      variant="outline"
                       className={
-                        user.role === "admin" 
-                          ? "border-red-500/50 bg-red-500/10 text-red-600 dark:text-red-400" 
-                          : user.role === "teacher" 
-                            ? "border-blue-500/50 bg-blue-500/10 text-blue-600 dark:text-blue-400" 
+                        user.role === "admin"
+                          ? "border-red-500/50 bg-red-500/10 text-red-600 dark:text-red-400"
+                          : user.role === "teacher"
+                            ? "border-blue-500/50 bg-blue-500/10 text-blue-600 dark:text-blue-400"
                             : "border-slate-500/50 bg-slate-500/10 text-slate-600"
                       }
                     >
@@ -400,7 +374,11 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -409,12 +387,14 @@ export default function UserManagement({ currentRole }: UserManagementProps) {
                           <Pencil className="mr-2 h-4 w-4" />
                           Edit Details
                         </DropdownMenuItem>
-                        
+
                         {isAdmin && (
                           <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
                             onClick={() => {
-                              if (confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) {
+                              if (
+                                confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)
+                              ) {
                                 deleteUserMutation.mutate({ userId: user.id });
                               }
                             }}

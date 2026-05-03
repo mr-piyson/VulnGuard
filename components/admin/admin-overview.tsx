@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Users, FileText, Award, TrendingUp } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BookOpen, Users, FileText, Award, TrendingUp } from "lucide-react";
 
 interface AdminOverviewProps {
   stats: {
-    coursesCount: number
-    usersCount: number
-    enrollmentsCount: number
-    certificatesCount: number
-  }
+    coursesCount: number;
+    usersCount: number;
+    enrollmentsCount: number;
+    certificatesCount: number;
+  };
 }
 
 export default function AdminOverview({ stats }: AdminOverviewProps) {
@@ -77,11 +77,11 @@ export default function AdminOverview({ stats }: AdminOverviewProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[200px] flex items-center justify-center text-muted-foreground italic border-2 border-dashed rounded-lg">
+          <div className="h-50 flex items-center justify-center text-muted-foreground italic border-2 border-dashed rounded-lg">
             Activity chart placeholder - Your platform is growing!
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

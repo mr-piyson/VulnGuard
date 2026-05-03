@@ -35,7 +35,7 @@ export default function CertificateView({ certificate, course, user }: Certifica
 
     try {
       const { pdfBase64, filename } = await downloadMutation.mutateAsync({ id: certificate.id });
-      
+
       // Convert base64 to blob
       const byteCharacters = atob(pdfBase64);
       const byteNumbers = new Array(byteCharacters.length);
@@ -87,7 +87,7 @@ export default function CertificateView({ certificate, course, user }: Certifica
 
         <Card className="mb-8">
           <CardContent className="p-0">
-            <div className="relative bg-gradient-to-br from-primary/5 via-background to-primary/5 p-12 border-8 border-primary/20">
+            <div className="relative bg-linear-to-br from-primary/5 via-background to-primary/5 p-12 border-8 border-primary/20">
               <div className="absolute top-4 left-4 right-4 bottom-4 border-2 border-primary/30 pointer-events-none" />
 
               <div className="text-center space-y-6 relative">
@@ -139,7 +139,9 @@ export default function CertificateView({ certificate, course, user }: Certifica
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground mb-4">Verify this certificate at: https://TeachNLearn-academy.com/verify/{certificate.certificateNumber}</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Verify this certificate at: https://TeachNLearn-academy.com/verify/{certificate.certificateNumber}
+          </p>
           <Link href="/dashboard">
             <Button variant="link">Continue Learning →</Button>
           </Link>

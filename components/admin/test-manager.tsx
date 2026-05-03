@@ -119,7 +119,9 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
       const updated = await updateQuestion.mutateAsync({
         id,
         ...data,
-        options: Array.isArray(data.options) ? JSON.stringify(data.options.filter((o: string) => o.trim() !== "")) : data.options,
+        options: Array.isArray(data.options)
+          ? JSON.stringify(data.options.filter((o: string) => o.trim() !== ""))
+          : data.options,
       });
 
       if (test) {
@@ -255,23 +257,41 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
                     </TabsList>
                   </div>
                   <TabsContent value="edit" className="mt-0">
-                    <Textarea value={newQuestion.question} onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })} placeholder="Enter the question (Markdown supported)..." className="min-h-[100px]" />
+                    <Textarea
+                      value={newQuestion.question}
+                      onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
+                      placeholder="Enter the question (Markdown supported)..."
+                      className="min-h-25"
+                    />
                   </TabsContent>
                   <TabsContent value="preview" className="mt-0">
-                    <div className="border rounded-md p-3 bg-muted/20 min-h-[100px]">{newQuestion.question ? <Markdown content={newQuestion.question} className="prose-sm" /> : <p className="text-sm text-muted-foreground italic">No content to preview</p>}</div>
+                    <div className="border rounded-md p-3 bg-muted/20 min-h-25">
+                      {newQuestion.question ? (
+                        <Markdown content={newQuestion.question} className="prose-sm" />
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">No content to preview</p>
+                      )}
+                    </div>
                   </TabsContent>
                 </Tabs>
               </div>
               <div className="space-y-2">
                 <Label>Points</Label>
-                <Input type="number" value={newQuestion.points} onChange={(e) => setNewQuestion({ ...newQuestion, points: Number.parseInt(e.target.value) })} min="1" />
+                <Input
+                  type="number"
+                  value={newQuestion.points}
+                  onChange={(e) => setNewQuestion({ ...newQuestion, points: Number.parseInt(e.target.value) })}
+                  min="1"
+                />
               </div>
             </div>
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label>Options</Label>
-                <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Select one as correct</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                  Select one as correct
+                </span>
               </div>
               {newQuestion.options.map((opt, i) => (
                 <div key={i} className="flex gap-2">
@@ -284,7 +304,13 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
                     }}
                     placeholder={`Option ${i + 1}`}
                   />
-                  <Button type="button" variant={newQuestion.correctAnswer === opt && opt !== "" ? "default" : "outline"} size="sm" onClick={() => setNewQuestion({ ...newQuestion, correctAnswer: opt })} className={newQuestion.correctAnswer === opt && opt !== "" ? "" : "bg-transparent"}>
+                  <Button
+                    type="button"
+                    variant={newQuestion.correctAnswer === opt && opt !== "" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setNewQuestion({ ...newQuestion, correctAnswer: opt })}
+                    className={newQuestion.correctAnswer === opt && opt !== "" ? "" : "bg-transparent"}
+                  >
                     {newQuestion.correctAnswer === opt && opt !== "" ? <Check className="h-4 w-4" /> : "Set Correct"}
                   </Button>
                 </div>
@@ -305,16 +331,30 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
                   </TabsList>
                 </div>
                 <TabsContent value="edit" className="mt-0">
-                  <Textarea value={newQuestion.explanation} onChange={(e) => setNewQuestion({ ...newQuestion, explanation: e.target.value })} placeholder="Explain why the answer is correct..." rows={2} />
+                  <Textarea
+                    value={newQuestion.explanation}
+                    onChange={(e) => setNewQuestion({ ...newQuestion, explanation: e.target.value })}
+                    placeholder="Explain why the answer is correct..."
+                    rows={2}
+                  />
                 </TabsContent>
                 <TabsContent value="preview" className="mt-0">
-                  <div className="border rounded-md p-3 bg-muted/20 min-h-[60px]">{newQuestion.explanation ? <Markdown content={newQuestion.explanation} className="prose-sm" /> : <p className="text-sm text-muted-foreground italic">No explanation to preview</p>}</div>
+                  <div className="border rounded-md p-3 bg-muted/20 min-h-15">
+                    {newQuestion.explanation ? (
+                      <Markdown content={newQuestion.explanation} className="prose-sm" />
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No explanation to preview</p>
+                    )}
+                  </div>
                 </TabsContent>
               </Tabs>
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button onClick={handleAddQuestion} disabled={loading || !newQuestion.question || !newQuestion.correctAnswer}>
+              <Button
+                onClick={handleAddQuestion}
+                disabled={loading || !newQuestion.question || !newQuestion.correctAnswer}
+              >
                 Create Question
               </Button>
               <Button variant="outline" onClick={() => setShowNewForm(false)} className="bg-transparent">
@@ -327,7 +367,17 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
 
       <div className="space-y-4">
         {test.questions.map((q, idx) => (
-          <QuestionItem key={q.id} question={q} index={idx} isEditing={editingQuestionId === q.id} onEdit={() => setEditingQuestionId(q.id)} onCancel={() => setEditingQuestionId(null)} onDelete={() => handleDeleteQuestion(q.id)} onSave={(data: any) => handleUpdateQuestion(q.id, data)} loading={loading} />
+          <QuestionItem
+            key={q.id}
+            question={q}
+            index={idx}
+            isEditing={editingQuestionId === q.id}
+            onEdit={() => setEditingQuestionId(q.id)}
+            onCancel={() => setEditingQuestionId(null)}
+            onDelete={() => handleDeleteQuestion(q.id)}
+            onSave={(data: any) => handleUpdateQuestion(q.id, data)}
+            loading={loading}
+          />
         ))}
       </div>
     </div>
@@ -365,10 +415,14 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
                   </TabsList>
                 </div>
                 <TabsContent value="edit" className="mt-0">
-                  <Textarea value={editedData.question} onChange={(e) => setEditedData({ ...editedData, question: e.target.value })} className="min-h-[100px]" />
+                  <Textarea
+                    value={editedData.question}
+                    onChange={(e) => setEditedData({ ...editedData, question: e.target.value })}
+                    className="min-h-25"
+                  />
                 </TabsContent>
                 <TabsContent value="preview" className="mt-0">
-                  <div className="border rounded-md p-3 bg-muted/20 min-h-[100px]">
+                  <div className="border rounded-md p-3 bg-muted/20 min-h-25">
                     <Markdown content={editedData.question} className="prose-sm" />
                   </div>
                 </TabsContent>
@@ -376,7 +430,12 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
             </div>
             <div className="space-y-2">
               <Label>Points</Label>
-              <Input type="number" value={editedData.points} onChange={(e) => setEditedData({ ...editedData, points: Number.parseInt(e.target.value) })} min="1" />
+              <Input
+                type="number"
+                value={editedData.points}
+                onChange={(e) => setEditedData({ ...editedData, points: Number.parseInt(e.target.value) })}
+                min="1"
+              />
             </div>
           </div>
 
@@ -392,7 +451,12 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
                     setEditedData({ ...editedData, options: newOpts });
                   }}
                 />
-                <Button variant={editedData.correctAnswer === opt ? "default" : "outline"} size="sm" onClick={() => setEditedData({ ...editedData, correctAnswer: opt })} className={editedData.correctAnswer === opt ? "" : "bg-transparent"}>
+                <Button
+                  variant={editedData.correctAnswer === opt ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setEditedData({ ...editedData, correctAnswer: opt })}
+                  className={editedData.correctAnswer === opt ? "" : "bg-transparent"}
+                >
                   {editedData.correctAnswer === opt ? <Check className="h-4 w-4" /> : "Set Correct"}
                 </Button>
               </div>
@@ -413,10 +477,20 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
                 </TabsList>
               </div>
               <TabsContent value="edit" className="mt-0">
-                <Textarea value={editedData.explanation} onChange={(e) => setEditedData({ ...editedData, explanation: e.target.value })} rows={2} />
+                <Textarea
+                  value={editedData.explanation}
+                  onChange={(e) => setEditedData({ ...editedData, explanation: e.target.value })}
+                  rows={2}
+                />
               </TabsContent>
               <TabsContent value="preview" className="mt-0">
-                <div className="border rounded-md p-3 bg-muted/20 min-h-[60px]">{editedData.explanation ? <Markdown content={editedData.explanation} className="prose-sm" /> : <p className="text-sm text-muted-foreground italic">No explanation to preview</p>}</div>
+                <div className="border rounded-md p-3 bg-muted/20 min-h-15">
+                  {editedData.explanation ? (
+                    <Markdown content={editedData.explanation} className="prose-sm" />
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">No explanation to preview</p>
+                  )}
+                </div>
               </TabsContent>
             </Tabs>
           </div>
@@ -461,7 +535,12 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
             <Button size="icon" variant="ghost" onClick={onEdit} className="h-8 w-8">
               <Edit2 className="h-4 w-4" />
             </Button>
-            <Button size="icon" variant="ghost" onClick={onDelete} className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={onDelete}
+              className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
               <Trash className="h-4 w-4" />
             </Button>
           </div>
@@ -470,7 +549,10 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
       <CardContent className="pb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {options.map((opt: string, i: number) => (
-            <div key={i} className={`p-2.5 rounded-lg border text-sm transition-colors ${opt === question.correctAnswer ? "bg-primary/10 border-primary/40 font-medium" : "bg-muted/30 border-transparent"}`}>
+            <div
+              key={i}
+              className={`p-2.5 rounded-lg border text-sm transition-colors ${opt === question.correctAnswer ? "bg-primary/10 border-primary/40 font-medium" : "bg-muted/30 border-transparent"}`}
+            >
               <div className="flex items-center justify-between">
                 <span>{opt}</span>
                 {opt === question.correctAnswer && <Check className="h-3.5 w-3.5 text-primary" />}

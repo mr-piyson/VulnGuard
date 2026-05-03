@@ -116,12 +116,22 @@ export default function LessonManager({ moduleId, lessons: initialLessons = [] }
       {(showNewForm || editingLessonId) && (
         <Card className="bg-muted/50 border-primary/20">
           <CardHeader>
-            <CardTitle className="text-base">{editingLessonId ? `Edit Lesson: ${editForm.title}` : "New Lesson"}</CardTitle>
+            <CardTitle className="text-base">
+              {editingLessonId ? `Edit Lesson: ${editForm.title}` : "New Lesson"}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Lesson Title</Label>
-              <Input value={editingLessonId ? editForm.title : newLesson.title} onChange={(e) => (editingLessonId ? setEditForm({ ...editForm, title: e.target.value }) : setNewLesson({ ...newLesson, title: e.target.value }))} placeholder="e.g., Password Hashing Basics" />
+              <Input
+                value={editingLessonId ? editForm.title : newLesson.title}
+                onChange={(e) =>
+                  editingLessonId
+                    ? setEditForm({ ...editForm, title: e.target.value })
+                    : setNewLesson({ ...newLesson, title: e.target.value })
+                }
+                placeholder="e.g., Password Hashing Basics"
+              />
             </div>
             <div className="space-y-2">
               <Tabs defaultValue="edit" className="w-full">
@@ -137,16 +147,41 @@ export default function LessonManager({ moduleId, lessons: initialLessons = [] }
                   </TabsList>
                 </div>
                 <TabsContent value="edit" className="mt-0">
-                  <Textarea value={editingLessonId ? editForm.content : newLesson.content} onChange={(e) => (editingLessonId ? setEditForm({ ...editForm, content: e.target.value }) : setNewLesson({ ...newLesson, content: e.target.value }))} placeholder="Lesson content in markdown format..." rows={10} className="min-h-[200px]" />
+                  <Textarea
+                    value={editingLessonId ? editForm.content : newLesson.content}
+                    onChange={(e) =>
+                      editingLessonId
+                        ? setEditForm({ ...editForm, content: e.target.value })
+                        : setNewLesson({ ...newLesson, content: e.target.value })
+                    }
+                    placeholder="Lesson content in markdown format..."
+                    rows={10}
+                    className="min-h-50"
+                  />
                 </TabsContent>
                 <TabsContent value="preview" className="mt-0">
-                  <div className="border rounded-md p-4 bg-muted/20 min-h-[200px]">{(editingLessonId ? editForm.content : newLesson.content) ? <Markdown content={editingLessonId ? editForm.content! : newLesson.content} /> : <p className="text-sm text-muted-foreground italic">No content to preview</p>}</div>
+                  <div className="border rounded-md p-4 bg-muted/20 min-h-50">
+                    {(editingLessonId ? editForm.content : newLesson.content) ? (
+                      <Markdown content={editingLessonId ? editForm.content! : newLesson.content} />
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No content to preview</p>
+                    )}
+                  </div>
                 </TabsContent>
               </Tabs>
             </div>
             <div className="space-y-2">
               <Label>Duration (minutes)</Label>
-              <Input type="number" value={editingLessonId ? editForm.duration : newLesson.duration} onChange={(e) => (editingLessonId ? setEditForm({ ...editForm, duration: Number.parseInt(e.target.value) }) : setNewLesson({ ...newLesson, duration: Number.parseInt(e.target.value) }))} min="1" />
+              <Input
+                type="number"
+                value={editingLessonId ? editForm.duration : newLesson.duration}
+                onChange={(e) =>
+                  editingLessonId
+                    ? setEditForm({ ...editForm, duration: Number.parseInt(e.target.value) })
+                    : setNewLesson({ ...newLesson, duration: Number.parseInt(e.target.value) })
+                }
+                min="1"
+              />
             </div>
             <div className="flex gap-2">
               {editingLessonId ? (
@@ -155,7 +190,12 @@ export default function LessonManager({ moduleId, lessons: initialLessons = [] }
                     <Check className="h-4 w-4 mr-2" />
                     Save Changes
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => setEditingLessonId(null)} className="bg-transparent">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEditingLessonId(null)}
+                    className="bg-transparent"
+                  >
                     <X className="h-4 w-4 mr-2" />
                     Cancel
                   </Button>
@@ -177,7 +217,10 @@ export default function LessonManager({ moduleId, lessons: initialLessons = [] }
 
       <div className="space-y-2">
         {lessons.map((lesson, index) => (
-          <div key={lesson.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg group hover:bg-muted/50 transition-colors">
+          <div
+            key={lesson.id}
+            className="flex items-center justify-between p-4 bg-muted/30 rounded-lg group hover:bg-muted/50 transition-colors"
+          >
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">#{index + 1}</span>
@@ -189,7 +232,12 @@ export default function LessonManager({ moduleId, lessons: initialLessons = [] }
               <Button size="sm" variant="ghost" onClick={() => handleStartEdit(lesson)}>
                 <Pencil className="h-4 w-4" />
               </Button>
-              <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteLesson(lesson.id)}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => handleDeleteLesson(lesson.id)}
+              >
                 <Trash className="h-4 w-4" />
               </Button>
             </div>
