@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -49,6 +49,7 @@ interface LearningInterfaceProps {
 export default function LearningInterface({ course, modules, currentLesson, allLessons, progressMap: initialProgressMap, isCompleted: initialCompleted }: LearningInterfaceProps) {
   const router = useRouter();
   const utils = trpc.useUtils();
+  const mainRef = useRef<HTMLDivElement | null>(null);
   const [isCompleted, setIsCompleted] = useState(initialCompleted);
   const [progressMap, setProgressMap] = useState(initialProgressMap);
   const [marking, setMarking] = useState(false);
@@ -101,6 +102,7 @@ export default function LearningInterface({ course, modules, currentLesson, allL
   const navigateToLesson = (lessonId: string) => {
     router.push(`/courses/${course.slug}/learn?lesson=${lessonId}`);
     setSidebarOpen(false);
+    mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const SidebarContent = () => (
@@ -195,7 +197,7 @@ export default function LearningInterface({ course, modules, currentLesson, allL
           <SidebarContent />
         </aside>
 
-        <main className="flex-1 overflow-y-auto">
+        <main ref={mainRef} className="flex-1 overflow-y-auto">
           <div className="max-w-4xl mx-auto p-6 lg:p-8">
             <LessonContent lesson={currentLesson} />
 
