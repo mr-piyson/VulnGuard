@@ -40,7 +40,12 @@ export const usersRouter = router({
 
   getTeachers: adminProcedure.query(async () => {
     return await prisma.user.findMany({
-      where: { role: "teacher" },
+      where: {
+        role: {
+          equals: "teacher",
+          mode: "insensitive",
+        },
+      },
       select: { id: true, name: true, email: true },
     });
   }),
@@ -129,38 +134,42 @@ export const usersRouter = router({
       return user;
     }),
 
-  assignStudentToTeacher: adminProcedure.input(z.object({ studentId: z.string(), teacherId: z.string().nullable() })).mutation(async ({ input }) => {
-    return await prisma.user.update({
-      where: { id: input.studentId },
-      data: { teacherId: input.teacherId },
-    });
-  }),
+  assignStudentToTeacher: adminProcedure
+    .input(z.object({ studentId: z.string(), teacherId: z.string().nullable() }))
+    .mutation(async ({ input }) => {
+      return await prisma.user.update({
+        where: { id: input.studentId },
+        data: { teacherId: input.teacherId },
+      });
+    }),
 
-  removeStudentFromTeacher: teacherOrAdminProcedure.input(z.object({ studentId: z.string() })).mutation(async ({ input, ctx }) => {
-    const { session, userRole } = ctx;
+  removeStudentFromTeacher: teacherOrAdminProcedure
+    .input(z.object({ studentId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { session, userRole } = ctx;
 
-    if (userRole === "admin") {
+      if (userRole === "admin") {
+        return await prisma.user.update({
+          where: { id: input.studentId },
+          data: { teacherId: null },
+        });
+      }
+
+      // Check if student is actually assigned to this teacher
+      const student = await prisma.user.findUnique({
+        where: { id: input.studentId },
+        select: { teacherId: true },
+      });
+
+      if (student?.teacherId !== session.user.id) {
+        throw new Error("You do not have permission to manage this student");
+      }
+
       return await prisma.user.update({
         where: { id: input.studentId },
         data: { teacherId: null },
       });
-    }
-
-    // Check if student is actually assigned to this teacher
-    const student = await prisma.user.findUnique({
-      where: { id: input.studentId },
-      select: { teacherId: true },
-    });
-
-    if (student?.teacherId !== session.user.id) {
-      throw new Error("You do not have permission to manage this student");
-    }
-
-    return await prisma.user.update({
-      where: { id: input.studentId },
-      data: { teacherId: null },
-    });
-  }),
+    }),
 
   deleteUser: adminProcedure.input(z.object({ userId: z.string() })).mutation(async ({ input }) => {
     return await prisma.user.delete({
