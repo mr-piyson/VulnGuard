@@ -3,6 +3,7 @@ import { z } from "zod";
 import { router, adminProcedure, teacherOrAdminProcedure, protectedProcedure } from "../trpc";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export const usersRouter = router({
   me: protectedProcedure.query(async ({ ctx }) => {
@@ -115,19 +116,13 @@ export const usersRouter = router({
       });
 
       if (password) {
-        // To update another user's password securely with better-auth,
-        // we'd typically use an admin plugin or a password hasher.
-        // For now, we'll use better-auth's internal update if possible
-        // or provide a placeholder for the logic.
-        // Note: For most setups, you'd need to hash this password.
-        await prisma.account.updateMany({
-          where: {
+        // Use better-auth admin plugin to securely update the user's password
+        await (auth.api as any).setUserPassword({
+          body: {
             userId: id,
-            providerId: "email",
+            newPassword: password,
           },
-          data: {
-            password: password, // In a real app, hash this with scrypt/bcrypt
-          },
+          headers: await headers(),
         });
       }
 
